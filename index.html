@@ -4,93 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>資產再平衡計算機</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
-        .card {
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            margin: 2rem auto;
-            max-width: 36rem;
-            padding: 1.5rem;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 20px;
         }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .slider-container {
+            margin: 20px 0;
+        }
+        
         .slider {
             width: 100%;
-            height: 4px;
-            background: #e5e7eb;
-            border-radius: 2px;
-            outline: none;
+            margin: 10px 0;
         }
-        .slider::-webkit-slider-thumb {
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            background: #3b82f6;
-            border-radius: 50%;
-            cursor: pointer;
+        
+        .ratio-display {
+            font-size: 0.875rem;
+            color: #6b7280;
         }
+        
+        .ratio-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        
+        .results {
+            background-color: #f9fafb;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+        
+        .results-group {
+            margin-bottom: 16px;
+        }
+        
+        .results-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .result-item-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .result-item-value {
+            font-weight: 500;
+        }
+        
         .alert {
-            padding: 1rem;
-            border-radius: 0.375rem;
-            margin-top: 0.5rem;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
         }
+        
         .alert-green {
-            background-color: #ecfdf5;
+            background-color: #d1fae5;
             color: #065f46;
         }
+        
         .alert-blue {
-            background-color: #eff6ff;
+            background-color: #dbeafe;
             color: #1e40af;
         }
     </style>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="card">
-        <div class="flex items-center gap-2 mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<body>
+    <div class="container">
+        <div class="header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                 <line x1="2" y1="7" x2="22" y2="7"></line>
             </svg>
-            <h1 class="text-xl font-bold">資產再平衡計算機</h1>
+            <h1 class="title">資產再平衡計算機</h1>
         </div>
-
-        <div class="space-y-6">
-            <div class="space-y-4">
-                <div>
-                    <label class="text-sm font-medium">目前股票金額</label>
-                    <input type="number" id="currentStocks" placeholder="輸入股票現值" 
-                           class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
-                </div>
-                
-                <div>
-                    <label class="text-sm font-medium">目前現金金額</label>
-                    <input type="number" id="currentCash" placeholder="輸入現金金額" 
-                           class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
-                </div>
-
-                <div class="pt-4">
-                    <label class="text-sm font-medium">目標股票配置比例：<span id="targetRatioDisplay">50.00</span>%</label>
-                    <div class="flex items-center gap-4">
-                        <input type="range" id="targetRatio" min="0" max="100" step="0.01" value="50" 
-                               class="slider flex-1">
-                        <div class="text-sm text-gray-500 min-w-[140px]">
-                            股票:<span id="stockRatio">50.00</span>% / 現金:<span id="cashRatio">50.00</span>%
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="stockInput" value="50.00" min="0" max="100" step="0.01"
-                           class="text-center px-3 py-2 border border-gray-300 rounded-md">
-                    <input type="number" id="cashInput" value="50.00" min="0" max="100" step="0.01"
-                           class="text-center px-3 py-2 border border-gray-300 rounded-md">
-                </div>
-            </div>
-
-            <div id="results" class="space-y-4 bg-gray-50 p-4 rounded-lg hidden">
-                <!-- Results will be inserted here by JavaScript -->
+        
+        <div class="input-group">
+            <label>目前股票金額</label>
+            <input type="number" id="currentStocks" placeholder="輸入股票現值">
+        </div>
+        
+        <div class="input-group">
+            <label>目前現金金額</label>
+            <input type="number" id="currentCash" placeholder="輸入現金金額">
+        </div>
+        
+        <div class="slider-container">
+            <label>目標股票配置比例：<span id="targetRatioDisplay">50.00</span>%</label>
+            <input type="range" id="targetRatio" class="slider" min="0" max="100" step="0.01" value="50">
+            <div class="ratio-display">
+                股票:<span id="stockRatio">50.00</span>% / 現金:<span id="cashRatio">50.00</span>%
             </div>
         </div>
+        
+        <div class="ratio-inputs">
+            <input type="number" id="stockInput" value="50.00" min="0" max="100" step="0.01">
+            <input type="number" id="cashInput" value="50.00" min="0" max="100" step="0.01">
+        </div>
+        
+        <div id="results" style="display: none;"></div>
     </div>
 
     <script>
@@ -112,7 +177,7 @@
             const targetStockRatio = Number(document.getElementById('targetRatio').value);
 
             if (!currentStocks && !currentCash) {
-                document.getElementById('results').classList.add('hidden');
+                document.getElementById('results').style.display = 'none';
                 return;
             }
 
@@ -123,21 +188,23 @@
             const cashRatio = 100 - targetStockRatio;
 
             const resultsHTML = `
-                <div class="font-medium">目前資產配置分析</div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <div class="text-sm text-gray-600">總資產</div>
-                        <div class="font-medium">${formatCurrency(totalAssets)} 元</div>
+                <div class="results">
+                    <div class="results-group">
+                        <div class="results-title">目前資產配置分析</div>
+                        <div class="results-grid">
+                            <div>
+                                <div class="result-item-label">總資產</div>
+                                <div class="result-item-value">${formatCurrency(totalAssets)} 元</div>
+                            </div>
+                            <div>
+                                <div class="result-item-label">目前股票比例</div>
+                                <div class="result-item-value">${formatPercentage(currentStockRatio)}%</div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="text-sm text-gray-600">目前股票比例</div>
-                        <div class="font-medium">${formatPercentage(currentStockRatio)}%</div>
-                    </div>
-                </div>
 
-                <div class="pt-4">
-                    <div class="font-medium mb-2">建議調整方案</div>
-                    <div class="space-y-2">
+                    <div class="results-group">
+                        <div class="results-title">建議調整方案</div>
                         ${Math.abs(adjustment) > 1000 ? `
                             <div class="alert ${adjustment > 0 ? 'alert-green' : 'alert-blue'}">
                                 ${adjustment > 0 
@@ -146,18 +213,18 @@
                             </div>
                         ` : ''}
                     </div>
-                </div>
 
-                <div class="pt-2">
-                    <div class="font-medium mb-2">調整後配置</div>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <div class="text-gray-600">股票金額 (${formatPercentage(targetStockRatio)}%)</div>
-                            <div>${formatCurrency(targetAmount)} 元</div>
-                        </div>
-                        <div>
-                            <div class="text-gray-600">現金金額 (${formatPercentage(cashRatio)}%)</div>
-                            <div>${formatCurrency(totalAssets - targetAmount)} 元</div>
+                    <div class="results-group">
+                        <div class="results-title">調整後配置</div>
+                        <div class="results-grid">
+                            <div>
+                                <div class="result-item-label">股票金額 (${formatPercentage(targetStockRatio)}%)</div>
+                                <div class="result-item-value">${formatCurrency(targetAmount)} 元</div>
+                            </div>
+                            <div>
+                                <div class="result-item-label">現金金額 (${formatPercentage(cashRatio)}%)</div>
+                                <div class="result-item-value">${formatCurrency(totalAssets - targetAmount)} 元</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -165,7 +232,7 @@
 
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = resultsHTML;
-            resultsDiv.classList.remove('hidden');
+            resultsDiv.style.display = 'block';
         }
 
         // Event listeners
