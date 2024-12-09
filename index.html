@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投資計算機</title>
+    
+    <!-- 引入必要的 CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const RebalanceCalculator = () => {
+            const [riskProfile, setRiskProfile] = React.useState('moderate');
+            const [totalCash, setTotalCash] = React.useState('');
+            const [stocks, setStocks] = React.useState([
+                { name: '', price: '', shares: '', targetAmount: '', beta: '1' }
+            ]);
+            
+            const riskProfiles = {
+                conservative: { name: '保守型', stockTarget: 50, description: '適合風險承受度低的投資者' },
+                moderate: { name: '穩健型', stockTarget: 70, description: '適合可承受中等風險的投資者' },
+                aggressive: { name: '積極型', stockTarget: 90, description: '適合風險承受度高的投資者' }
+            };
+
+            const formatCurrency = (value) => {
+                return new Intl.NumberFormat('zh-TW', {
+                    style: 'decimal',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(value);
+            };
+
+            const calculateStockValue = (stock) => {
+                return Number(stock.price) * Number(stock.shares) || 0;
+            };
+
+            const getTotalStockValue = () => {
+                return stocks.reduce((sum, stock) => sum + calculateStockValue(stock), 0);
+            };
+
+            const getTotalPortfolioValue = () => {
+                return getTotalStockValue() + Number(totalCash);
+            };
+
+            const calculateStockPercentage = (stockValue) => {
+                const total = getTotalPortfolioValue();
+                return total > 0 ? (stockValue / total * 100).toFixed(1) : '0';
+            };
+
+            const addStock = () => {
+                setStocks([...stocks, { name: '', price: '', shares: '', targetAmount: '', beta: '1' }]);
+            };
+
+            const removeStock = (index) => {
+                setStocks(stocks.filter((_, i) => i !== index));
+            };
+
+            const updateStock = (index, field, value) => {
+                const newStocks = [...stocks];
+                newStocks[index][field] = value;
+                setStocks(newStocks);
+            };
+
+            const calculateRequiredShares = (stock) => {
+                if (!stock.targetAmount || !stock.price) return 0;
+                return Math.floor(Number(stock.targetAmount) / Number(stock.price));
+            };
+
+            const calculateAdditionalInvestment = (stock) => {
+                const targetAmount = Number(stock.targetAmount);
+                const currentAmount = calculateStockValue(stock);
+                return targetAmount - currentAmount;
+            };
+
+            return (
+                <div className="min-h-screen p-4">
+                    <div className="max-w-2xl mx-auto bg-white rounded-lg shadow p-6">
+                        <h1 className="text-2xl font-bold text-center mb-6">投資組合配置計算機</h1>
+                        
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium">風險承受度</label>
+                                <select 
+                                    className="w-full p-2 border rounded"
+                                    value={riskProfile}
+                                    onChange={(e) => setRiskProfile(e.target.value)}
+                                >
+                                    {Object.entries(riskProfiles).map(([key, profile]) => (
+                                        <option key={key} value={key}>{profile.name}</option>
+                                    ))}
+                                </select>
+                                <p className="text-sm text-gray-600">{riskProfiles[riskProfile].description}</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium">現金持有</label>
+                                    <input
+                                        type="number"
+                                        className="w-full p-2 border rounded"
+                                        value={totalCash}
+                                        onChange={(e) => setTotalCash(e.target.value)}
+                                        placeholder="輸入現金金額"
+                                    />
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-lg font-medium">股票清單</h2>
+                                    <button 
+                                        onClick={addStock}
+                                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    >
+                                        新增股票
+                                    </button>
+                                </div>
+
+                                {stocks.map((stock, index) => (
+                                    <div key={index} className="p-4 border rounded space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium">股票名稱</label>
+                                                <input
+                                                    className="w-full p-2 border rounded"
+                                                    value={stock.name}
+                                                    onChange={(e) => updateStock(index, 'name', e.target.value)}
+                                                    placeholder="輸入股票名稱"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium">股價</label>
+                                                <input
+                                                    type="number"
+                                                    className="w-full p-2 border rounded"
+                                                    value={stock.price}
+                                                    onChange={(e) => updateStock(index, 'price', e.target.value)}
+                                                    placeholder="輸入股價"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium">持有股數</label>
+                                                <input
+                                                    type="number"
+                                                    className="w-full p-2 border rounded"
+                                                    value={stock.shares}
+                                                    onChange={(e) => updateStock(index, 'shares', e.target.value)}
+                                                    placeholder="輸入股數"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium">目標金額</label>
+                                                <input
+                                                    type="number"
+                                                    className="w-full p-2 border rounded"
+                                                    value={stock.targetAmount}
+                                                    onChange={(e) => updateStock(index, 'targetAmount', e.target.value)}
+                                                    placeholder="輸入目標金額"
+                                                />
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => removeStock(index)}
+                                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                        >
+                                            刪除
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="bg-gray-50 p-4 rounded space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <div className="font-medium">總投資組合價值</div>
+                                        <div className="text-xl">{formatCurrency(getTotalPortfolioValue())} 元</div>
+                                    </div>
+                                    <div>
+                                        <div className="font-medium">現金佔比</div>
+                                        <div className="text-xl">{calculateStockPercentage(Number(totalCash))}%</div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="font-medium">股票配置</div>
+                                    {stocks.map((stock, index) => {
+                                        const currentValue = calculateStockValue(stock);
+                                        const additionalInvestment = calculateAdditionalInvestment(stock);
+                                        
+                                        return stock.name && (
+                                            <div key={index} className="grid grid-cols-2 gap-2">
+                                                <div>{stock.name}</div>
+                                                <div className="text-right">
+                                                    <div>{calculateStockPercentage(currentValue)}%</div>
+                                                    {stock.targetAmount && (
+                                                        <div className={additionalInvestment > 0 ? 'text-green-600' : 'text-red-600'}>
+                                                            {additionalInvestment > 0 ? '買入' : '賣出'} {formatCurrency(Math.abs(additionalInvestment))} 元
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 渲染應用
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<RebalanceCalculator />);
+    </script>
+</body>
+</html>
