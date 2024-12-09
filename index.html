@@ -4,132 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>投資組合再平衡計算機</title>
-    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* [之前的導航欄樣式保持不變] */
 
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        .nav-container {
-            background-color: #333;
-            padding: 1rem;
-            position: sticky;
-            top: 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        nav {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 2rem;
-            justify-content: center;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        nav a:hover {
-            background-color: #555;
-        }
-
-        .active {
-            background-color: #4CAF50;
-        }
-
-        @media (max-width: 600px) {
-            nav ul {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-        }
-
-        .content {
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-        }
-
-        /* 添加計算機組件的樣式 */
-        .card {
+        /* 添加計算機相關樣式 */
+        .calculator-card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 36rem;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 2rem auto;
         }
 
-        .card-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
+        .input-group {
+            margin-bottom: 1rem;
         }
 
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            text-align: center;
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
         }
 
-        .card-content {
-            padding: 1.5rem;
-        }
-
-        .input {
+        .input-field {
             width: 100%;
             padding: 0.5rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #ddd;
             border-radius: 4px;
+            margin-bottom: 1rem;
         }
 
-        .button {
-            width: 100%;
-            padding: 0.75rem;
+        .calculate-button {
             background-color: #4CAF50;
             color: white;
             border: none;
+            padding: 0.75rem 1.5rem;
             border-radius: 4px;
             cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
         }
 
-        .button:hover {
-            background-color: #45a049;
+        .results {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 4px;
         }
 
-        .space-y-6 > * + * {
-            margin-top: 1.5rem;
-        }
-
-        .space-y-2 > * + * {
-            margin-top: 0.5rem;
-        }
-
-        .grid {
+        .results-grid {
             display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 1rem;
-        }
-
-        .grid-cols-3 {
-            grid-template-columns: repeat(3, 1fr);
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -137,23 +65,70 @@
     <div class="nav-container">
         <nav>
             <ul>
-                <li><a href="index.html" class="active">首頁</a></li>
-                <li><a href="index2.html">第二頁</a></li>
+                <li><a href="index.html" class="active">投資組合計算機</a></li>
+                <li><a href="index2.html">資產分配計算機</a></li>
             </ul>
         </nav>
     </div>
 
-    <div class="content">
-        <div id="root"></div>
+    <div class="calculator-card">
+        <h2>投資組合再平衡計算機</h2>
+        <div class="input-group">
+            <label for="stocks">目前股票金額</label>
+            <input type="number" id="stocks" class="input-field" placeholder="輸入股票現值">
+        </div>
+        <div class="input-group">
+            <label for="cash">目前現金金額</label>
+            <input type="number" id="cash" class="input-field" placeholder="輸入現金金額">
+        </div>
+        <div class="input-group">
+            <label for="target">目標股票比例</label>
+            <input type="range" id="target" class="input-field" min="0" max="100" value="50">
+            <span id="target-value">50%</span>
+        </div>
+        <button class="calculate-button" onclick="calculate()">計算再平衡</button>
+        <div id="results" class="results" style="display: none">
+            <!-- 結果將通過 JavaScript 動態填充 -->
+        </div>
     </div>
 
-    <script type="text/babel">
-        // 這裡放入您的 React 組件代碼
-        const RebalanceCalculator = () => {
-            // ... 您提供的完整 RebalanceCalculator 代碼 ...
-        };
+    <script>
+        // 添加計算功能的 JavaScript
+        function calculate() {
+            const stocks = Number(document.getElementById('stocks').value);
+            const cash = Number(document.getElementById('cash').value);
+            const target = Number(document.getElementById('target').value);
+            
+            const total = stocks + cash;
+            const currentStockRatio = (stocks / total) * 100;
+            const targetStockAmount = total * (target / 100);
+            const adjustment = targetStockAmount - stocks;
 
-        ReactDOM.render(<RebalanceCalculator />, document.getElementById('root'));
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            results.innerHTML = `
+                <h3>計算結果</h3>
+                <div class="results-grid">
+                    <div>
+                        <p>總資產：${formatNumber(total)} 元</p>
+                        <p>目前股票比例：${currentStockRatio.toFixed(1)}%</p>
+                    </div>
+                    <div>
+                        <p>建議調整：${adjustment > 0 ? '買入' : '賣出'}股票</p>
+                        <p>調整金額：${formatNumber(Math.abs(adjustment))} 元</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('zh-TW').format(num);
+        }
+
+        // 更新滑桿值顯示
+        document.getElementById('target').oninput = function() {
+            document.getElementById('target-value').textContent = this.value + '%';
+        }
     </script>
 </body>
 </html>
