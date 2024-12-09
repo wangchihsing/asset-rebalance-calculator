@@ -1,3 +1,8 @@
+好的，我將修改程式碼，把數值的顯示格式調整為只顯示到小數點後兩位。
+
+
+
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -69,20 +74,20 @@
                 </div>
 
                 <div class="pt-4">
-                    <label class="text-sm font-medium">目標股票配置比例：<span id="targetRatioDisplay">50.0</span>%</label>
+                    <label class="text-sm font-medium">目標股票配置比例：<span id="targetRatioDisplay">50.00</span>%</label>
                     <div class="flex items-center gap-4">
-                        <input type="range" id="targetRatio" min="0" max="100" step="0.1" value="50" 
+                        <input type="range" id="targetRatio" min="0" max="100" step="0.01" value="50" 
                                class="slider flex-1">
                         <div class="text-sm text-gray-500 min-w-[140px]">
-                            股票:<span id="stockRatio">50.0</span>% / 現金:<span id="cashRatio">50.0</span>%
+                            股票:<span id="stockRatio">50.00</span>% / 現金:<span id="cashRatio">50.00</span>%
                         </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="stockInput" value="50.0" min="0" max="100" step="0.1"
+                    <input type="number" id="stockInput" value="50.00" min="0" max="100" step="0.01"
                            class="text-center px-3 py-2 border border-gray-300 rounded-md">
-                    <input type="number" id="cashInput" value="50.0" min="0" max="100" step="0.1"
+                    <input type="number" id="cashInput" value="50.00" min="0" max="100" step="0.01"
                            class="text-center px-3 py-2 border border-gray-300 rounded-md">
                 </div>
             </div>
@@ -100,6 +105,10 @@
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
             }).format(value);
+        }
+
+        function formatPercentage(value) {
+            return value.toFixed(2);
         }
 
         function calculateRebalance() {
@@ -127,7 +136,7 @@
                     </div>
                     <div>
                         <div class="text-sm text-gray-600">目前股票比例</div>
-                        <div class="font-medium">${currentStockRatio.toFixed(1)}%</div>
+                        <div class="font-medium">${formatPercentage(currentStockRatio)}%</div>
                     </div>
                 </div>
 
@@ -148,11 +157,11 @@
                     <div class="font-medium mb-2">調整後配置</div>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <div class="text-gray-600">股票金額 (${targetStockRatio.toFixed(1)}%)</div>
+                            <div class="text-gray-600">股票金額 (${formatPercentage(targetStockRatio)}%)</div>
                             <div>${formatCurrency(targetAmount)} 元</div>
                         </div>
                         <div>
-                            <div class="text-gray-600">現金金額 (${cashRatio.toFixed(1)}%)</div>
+                            <div class="text-gray-600">現金金額 (${formatPercentage(cashRatio)}%)</div>
                             <div>${formatCurrency(totalAssets - targetAmount)} 元</div>
                         </div>
                     </div>
@@ -167,21 +176,21 @@
         // Event listeners
         document.getElementById('targetRatio').addEventListener('input', function(e) {
             const value = Number(e.target.value);
-            document.getElementById('targetRatioDisplay').textContent = value.toFixed(1);
-            document.getElementById('stockRatio').textContent = value.toFixed(1);
-            document.getElementById('cashRatio').textContent = (100 - value).toFixed(1);
-            document.getElementById('stockInput').value = value;
-            document.getElementById('cashInput').value = (100 - value);
+            document.getElementById('targetRatioDisplay').textContent = formatPercentage(value);
+            document.getElementById('stockRatio').textContent = formatPercentage(value);
+            document.getElementById('cashRatio').textContent = formatPercentage(100 - value);
+            document.getElementById('stockInput').value = formatPercentage(value);
+            document.getElementById('cashInput').value = formatPercentage(100 - value);
             calculateRebalance();
         });
 
         document.getElementById('stockInput').addEventListener('input', function(e) {
             const value = Number(e.target.value);
             document.getElementById('targetRatio').value = value;
-            document.getElementById('targetRatioDisplay').textContent = value.toFixed(1);
-            document.getElementById('stockRatio').textContent = value.toFixed(1);
-            document.getElementById('cashRatio').textContent = (100 - value).toFixed(1);
-            document.getElementById('cashInput').value = (100 - value);
+            document.getElementById('targetRatioDisplay').textContent = formatPercentage(value);
+            document.getElementById('stockRatio').textContent = formatPercentage(value);
+            document.getElementById('cashRatio').textContent = formatPercentage(100 - value);
+            document.getElementById('cashInput').value = formatPercentage(100 - value);
             calculateRebalance();
         });
 
@@ -189,10 +198,10 @@
             const value = Number(e.target.value);
             const stockValue = 100 - value;
             document.getElementById('targetRatio').value = stockValue;
-            document.getElementById('targetRatioDisplay').textContent = stockValue.toFixed(1);
-            document.getElementById('stockRatio').textContent = stockValue.toFixed(1);
-            document.getElementById('cashRatio').textContent = value.toFixed(1);
-            document.getElementById('stockInput').value = stockValue;
+            document.getElementById('targetRatioDisplay').textContent = formatPercentage(stockValue);
+            document.getElementById('stockRatio').textContent = formatPercentage(stockValue);
+            document.getElementById('cashRatio').textContent = formatPercentage(value);
+            document.getElementById('stockInput').value = formatPercentage(stockValue);
             calculateRebalance();
         });
 
@@ -202,3 +211,13 @@
     </script>
 </body>
 </html>
+
+```
+
+主要的更改包括：
+
+1. 新增了 `formatPercentage` 函數，專門處理百分比的格式化，固定顯示兩位小數
+2. 修改了滑桿和輸入框的 step 值為 0.01，使數值能更精確控制
+3. 更新了所有百分比顯示的地方，使用 `formatPercentage` 函數來確保統一顯示兩位小數
+
+這些修改應該能讓數值顯示更加整齊一致，都只顯示到小數點後兩位。您可以將這個更新後的檔案重新上傳到您的 GitHub 倉庫中，覆蓋原有的 index.html 檔案。請問您需要我解釋任何具體的修改部分嗎？
