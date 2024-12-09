@@ -5,22 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>資產配置計算機</title>
     <style>
-        /* [使用與 index.html 相同的樣式，只需添加新的特定樣式] */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .nav-container {
+            background-color: #333;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        .active {
+            background-color: #4CAF50;
+        }
+
+        .calculator-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
         .slider-container {
-            margin: 1rem 0;
+            margin: 1.5rem 0;
         }
 
         .ratio-display {
             display: flex;
             justify-content: space-between;
             margin-top: 0.5rem;
+            color: #666;
+        }
+
+        .calculate-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .calculate-button:hover {
+            background-color: #45a049;
+        }
+
+        .results {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
         }
 
         .adjustment-alert {
-            background-color: #e8f5e9;
+            margin-top: 1rem;
             padding: 1rem;
             border-radius: 4px;
-            margin: 1rem 0;
+            font-weight: 500;
+        }
+
+        .buy-alert {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .sell-alert {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        @media (max-width: 600px) {
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .calculator-card {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -36,72 +169,105 @@
 
     <div class="calculator-card">
         <h2>資產配置計算機</h2>
+        
         <div class="input-group">
             <label for="current-stocks">目前股票金額</label>
             <input type="number" id="current-stocks" class="input-field" placeholder="輸入股票現值">
         </div>
+
         <div class="input-group">
             <label for="current-cash">目前現金金額</label>
             <input type="number" id="current-cash" class="input-field" placeholder="輸入現金金額">
         </div>
+
         <div class="slider-container">
-            <label>目標股票配置比例</label>
-            <input type="range" id="stock-ratio" min="0" max="100" value="50" class="input-field">
+            <label>目標股票配置比例：<span id="target-ratio-display">50</span>%</label>
+            <input type="range" id="target-ratio" class="input-field" 
+                   min="0" max="100" value="50" step="0.1">
             <div class="ratio-display">
-                <span>股票: <span id="stock-ratio-value">50</span>%</span>
-                <span>現金: <span id="cash-ratio-value">50</span>%</span>
+                <span>股票：<span id="stock-ratio">50.0</span>%</span>
+                <span>現金：<span id="cash-ratio">50.0</span>%</span>
             </div>
         </div>
-        <button class="calculate-button" onclick="calculateAllocation()">計算配置</button>
-        <div id="allocation-results" class="results" style="display: none">
-            <!-- 結果將通過 JavaScript 動態填充 -->
+
+        <button class="calculate-button" onclick="calculate()">計算配置</button>
+
+        <div id="results" class="results">
+            <!-- 結果將由JavaScript動態填充 -->
         </div>
     </div>
 
     <script>
-        // 添加配置計算功能的 JavaScript
-        function calculateAllocation() {
+        // 更新比例顯示
+        const targetRatioSlider = document.getElementById('target-ratio');
+        
+        function updateRatios() {
+            const value = targetRatioSlider.value;
+            document.getElementById('target-ratio-display').textContent = value;
+            document.getElementById('stock-ratio').textContent = Number(value).toFixed(1);
+            document.getElementById('cash-ratio').textContent = (100 - value).toFixed(1);
+        }
+
+        targetRatioSlider.oninput = updateRatios;
+
+        // 格式化貨幣
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('zh-TW', {
+                style: 'decimal',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        // 計算資產配置
+        function calculate() {
             const currentStocks = Number(document.getElementById('current-stocks').value);
             const currentCash = Number(document.getElementById('current-cash').value);
-            const targetRatio = Number(document.getElementById('stock-ratio').value);
-            
-            const total = currentStocks + currentCash;
-            const currentRatio = (currentStocks / total) * 100;
-            const targetStocks = total * (targetRatio / 100);
-            const adjustment = targetStocks - currentStocks;
+            const targetRatio = Number(document.getElementById('target-ratio').value);
 
-            const results = document.getElementById('allocation-results');
+            const totalAssets = currentStocks + currentCash;
+            const currentStockRatio = (currentStocks / totalAssets) * 100;
+            const targetAmount = totalAssets * (targetRatio / 100);
+            const adjustment = targetAmount - currentStocks;
+
+            const results = document.getElementById('results');
             results.style.display = 'block';
+            
             results.innerHTML = `
-                <h3>配置分析</h3>
+                <h3>目前資產配置分析</h3>
                 <div class="results-grid">
                     <div>
-                        <p>總資產：${formatNumber(total)} 元</p>
-                        <p>目前股票比例：${currentRatio.toFixed(1)}%</p>
+                        <p>總資產</p>
+                        <p><strong>${formatCurrency(totalAssets)} 元</strong></p>
                     </div>
                     <div>
-                        <p>目標股票金額：${formatNumber(targetStocks)} 元</p>
-                        <p>目標現金金額：${formatNumber(total - targetStocks)} 元</p>
+                        <p>目前股票比例</p>
+                        <p><strong>${currentStockRatio.toFixed(1)}%</strong></p>
                     </div>
                 </div>
+
                 ${Math.abs(adjustment) > 1000 ? `
-                    <div class="adjustment-alert">
-                        <p>建議${adjustment > 0 ? '買入' : '賣出'}股票：${formatNumber(Math.abs(adjustment))} 元</p>
+                    <div class="adjustment-alert ${adjustment > 0 ? 'buy-alert' : 'sell-alert'}">
+                        <p>${adjustment > 0 ? '建議買入股票' : '建議賣出股票'}：${formatCurrency(Math.abs(adjustment))} 元</p>
                     </div>
                 ` : ''}
+
+                <h3 style="margin-top: 1.5rem">調整後配置</h3>
+                <div class="results-grid">
+                    <div>
+                        <p>股票金額 (${targetRatio}%)</p>
+                        <p><strong>${formatCurrency(targetAmount)} 元</strong></p>
+                    </div>
+                    <div>
+                        <p>現金金額 (${(100-targetRatio).toFixed(1)}%)</p>
+                        <p><strong>${formatCurrency(totalAssets - targetAmount)} 元</strong></p>
+                    </div>
+                </div>
             `;
         }
 
-        // 更新比例顯示
-        document.getElementById('stock-ratio').oninput = function() {
-            const stockRatio = this.value;
-            document.getElementById('stock-ratio-value').textContent = stockRatio;
-            document.getElementById('cash-ratio-value').textContent = (100 - stockRatio);
-        }
-
-        function formatNumber(num) {
-            return new Intl.NumberFormat('zh-TW').format(num);
-        }
+        // 初始化頁面
+        updateRatios();
     </script>
 </body>
 </html>
