@@ -17,8 +17,8 @@
     <script type="text/babel">
         const RebalanceCalculator = () => {
             const [assets, setAssets] = React.useState([
-                { name: '股票', current: '', target: '70', amount: 0, adjustAmount: 0, risk: 1.0 },
-                { name: '現金', current: '', target: '30', amount: 0, adjustAmount: 0, risk: 0.0 }
+                { name: '股票', current: '', target: '70', amount: 0, adjustAmount: 0 },
+                { name: '現金', current: '', target: '30', amount: 0, adjustAmount: 0 }
             ]);
 
             const [riskProfile, setRiskProfile] = React.useState('moderate');
@@ -35,23 +35,6 @@
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0
                 }).format(value);
-            };
-
-            const calculateRiskExposure = (assets) => {
-                const total = assets.reduce((sum, asset) => sum + Number(asset.current), 0);
-                const weightedRisk = assets.reduce((sum, asset) => {
-                    const weight = Number(asset.current) / total;
-                    return sum + (weight * asset.risk);
-                }, 0);
-                return (weightedRisk * 100).toFixed(1);
-            };
-
-            const updateTargetsBasedOnRisk = (profile) => {
-                const stockTarget = riskProfiles[profile].stockTarget;
-                const newAssets = [...assets];
-                newAssets[0].target = stockTarget;
-                newAssets[1].target = 100 - stockTarget;
-                setAssets(newAssets);
             };
 
             const calculateRebalance = () => {
@@ -84,11 +67,14 @@
 
             const handleRiskProfileChange = (value) => {
                 setRiskProfile(value);
-                updateTargetsBasedOnRisk(value);
+                const stockTarget = riskProfiles[value].stockTarget;
+                const newAssets = [...assets];
+                newAssets[0].target = stockTarget;
+                newAssets[1].target = 100 - stockTarget;
+                setAssets(newAssets);
             };
 
             const totalAmount = assets.reduce((sum, asset) => sum + Number(asset.current) || 0, 0);
-            const currentRiskExposure = calculateRiskExposure(assets);
 
             return (
                 <div className="min-h-screen p-4">
@@ -110,36 +96,37 @@
                                 <p className="text-sm text-gray-600">{riskProfiles[riskProfile].description}</p>
                             </div>
 
-                            <div className="text-lg font-medium flex justify-between">
-                                <span>總投資金額: {formatCurrency(totalAmount)} 元</span>
-                                <span>目前風險曝險: {currentRiskExposure}%</span>
+                            <div className="text-lg font-medium">
+                                總投資金額: {formatCurrency(totalAmount)} 元
                             </div>
 
-                            <div className="space-y-4">
-                                {assets.map((asset, index) => (
-                                    <div key={asset.name} className="grid grid-cols-3 gap-4 items-center">
-                                        <div>{asset.name}</div>
-                                        <div>
-                                            <input
-                                                type="number"
-                                                className="w-full p-2 border rounded"
-                                                value={asset.current}
-                                                onChange={(e) => handleInputChange(index, 'current', e.target.value)}
-                                                placeholder="輸入金額"
-                                            />
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="number"
-                                                className="w-20 p-2 border rounded"
-                                                value={asset.target}
-                                                onChange={(e) => handleInputChange(index, 'target', e.target.value)}
-                                            />
-                                            <span>%</span>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="grid grid-cols-3 gap-4 font-medium">
+                                <div>資產類別</div>
+                                <div>目前金額</div>
+                                <div>目標比例</div>
                             </div>
+                            
+                            {assets.map((asset, index) => (
+                                <div key={asset.name} className="grid grid-cols-3 gap-4 items-center">
+                                    <div>{asset.name}</div>
+                                    <input
+                                        type="number"
+                                        className="w-full p-2 border rounded"
+                                        value={asset.current}
+                                        onChange={(e) => handleInputChange(index, 'current', e.target.value)}
+                                        placeholder="輸入金額"
+                                    />
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            className="w-20 p-2 border rounded"
+                                            value={asset.target}
+                                            onChange={(e) => handleInputChange(index, 'target', e.target.value)}
+                                        />
+                                        <span>%</span>
+                                    </div>
+                                </div>
+                            ))}
                             
                             <button
                                 onClick={handleCalculate}
@@ -157,10 +144,6 @@
                                             <span>{asset.currentPercentage}%</span>
                                         </div>
                                     ))}
-
-                                    <div className="text-sm text-gray-600 mt-2">
-                                        調整後預計風險曝險: {(assets[0].target * assets[0].risk).toFixed(1)}%
-                                    </div>
 
                                     <div className="font-medium text-lg mt-6">調整建議:</div>
                                     {assets.map(asset => (
