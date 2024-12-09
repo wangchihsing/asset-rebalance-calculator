@@ -1,163 +1,84 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Slider } from '@/components/ui/slider';
-import { Calculator } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的網站 - 第二頁</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-const RebalanceCalculator = () => {
-  const [currentStocks, setCurrentStocks] = useState('');
-  const [currentCash, setCurrentCash] = useState('');
-  const [targetStockRatio, setTargetStockRatio] = useState(50);
+        body {
+            font-family: Arial, sans-serif;
+        }
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('zh-TW', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+        .nav-container {
+            background-color: #333;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
-  const calculateRebalance = () => {
-    const totalStocks = Number(currentStocks);
-    const totalCash = Number(currentCash);
-    const totalAssets = totalStocks + totalCash;
-    
-    const currentStockRatio = (totalStocks / totalAssets) * 100;
-    const targetAmount = totalAssets * (targetStockRatio / 100);
-    const adjustment = targetAmount - totalStocks;
-    
-    return {
-      totalAssets,
-      currentStockRatio,
-      adjustment,
-      targetCash: totalAssets - targetAmount,
-      targetStocks: targetAmount
-    };
-  };
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-  const results = currentStocks && currentCash ? calculateRebalance() : null;
-  const cashRatio = 100 - targetStockRatio;
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
 
-  return (
-    <Card className="w-full max-w-xl">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calculator className="w-5 h-5" />
-          資產再平衡計算機
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium">目前股票金額</label>
-            <Input
-              type="number"
-              value={currentStocks}
-              onChange={(e) => setCurrentStocks(e.target.value)}
-              placeholder="輸入股票現值"
-              className="mt-1"
-            />
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium">目前現金金額</label>
-            <Input
-              type="number"
-              value={currentCash}
-              onChange={(e) => setCurrentCash(e.target.value)}
-              placeholder="輸入現金金額"
-              className="mt-1"
-            />
-          </div>
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
 
-          <div className="pt-4">
-            <label className="text-sm font-medium">目標股票配置比例：{targetStockRatio.toFixed(1)}%</label>
-            <div className="flex items-center gap-4">
-              <Slider
-                value={[targetStockRatio]}
-                onValueChange={(value) => setTargetStockRatio(value[0])}
-                min={0}
-                max={100}
-                step={0.1}
-                className="flex-1"
-              />
-              <div className="text-sm text-gray-500 min-w-[140px]">
-                股票:{targetStockRatio.toFixed(1)}% / 現金:{cashRatio.toFixed(1)}%
-              </div>
-            </div>
-          </div>
+        nav a:hover {
+            background-color: #555;
+        }
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              type="number"
-              value={targetStockRatio}
-              onChange={(e) => setTargetStockRatio(Number(e.target.value))}
-              className="text-center"
-              min="0"
-              max="100"
-              step="0.1"
-            />
-            <Input
-              type="number"
-              value={cashRatio}
-              onChange={(e) => setTargetStockRatio(100 - Number(e.target.value))}
-              className="text-center"
-              min="0"
-              max="100"
-              step="0.1"
-            />
-          </div>
-        </div>
+        .active {
+            background-color: #4CAF50;
+        }
 
-        {results && (
-          <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-            <div className="font-medium">目前資產配置分析</div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-sm text-gray-600">總資產</div>
-                <div className="font-medium">{formatCurrency(results.totalAssets)} 元</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">目前股票比例</div>
-                <div className="font-medium">{results.currentStockRatio.toFixed(1)}%</div>
-              </div>
-            </div>
+        @media (max-width: 600px) {
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
 
-            <div className="pt-4">
-              <div className="font-medium mb-2">建議調整方案</div>
-              <div className="space-y-2">
-                {Math.abs(results.adjustment) > 1000 && (
-                  <Alert className={results.adjustment > 0 ? "bg-green-50" : "bg-blue-50"}>
-                    <AlertDescription>
-                      {results.adjustment > 0 
-                        ? `建議買入股票：${formatCurrency(Math.abs(results.adjustment))} 元` 
-                        : `建議賣出股票：${formatCurrency(Math.abs(results.adjustment))} 元`}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            </div>
+        .content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-container">
+        <nav>
+            <ul>
+                <li><a href="index.html">首頁</a></li>
+                <li><a href="index2.html" class="active">第二頁</a></li>
+            </ul>
+        </nav>
+    </div>
 
-            <div className="pt-2">
-              <div className="font-medium mb-2">調整後配置</div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-gray-600">股票金額 ({targetStockRatio.toFixed(1)}%)</div>
-                  <div>{formatCurrency(results.targetStocks)} 元</div>
-                </div>
-                <div>
-                  <div className="text-gray-600">現金金額 ({cashRatio.toFixed(1)}%)</div>
-                  <div>{formatCurrency(results.targetCash)} 元</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-export default RebalanceCalculator;
+    <div class="content">
+        <h1>這是第二頁</h1>
+        <p>歡迎來到第二個頁面</p>
+    </div>
+</body>
+</html>
