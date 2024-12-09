@@ -6,54 +6,65 @@
     <title>投資組合再平衡計算機</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f5f5f5;
         }
 
         .nav-bar {
             background-color: #333;
-            padding: 1rem;
+            padding: 0.5rem;
+            text-align: center;
         }
 
         .nav-bar a {
             color: white;
             text-decoration: none;
             padding: 0.5rem 1rem;
-            margin: 0 0.5rem;
+            margin: 0 0.25rem;
             border-radius: 4px;
+            display: inline-block;
         }
 
         .nav-bar a.active {
             background-color: #4CAF50;
         }
 
-        .calculator {
+        .calculator-card {
             max-width: 600px;
             margin: 2rem auto;
             padding: 2rem;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         }
 
-        .input-group {
+        h2 {
+            margin-top: 0;
             margin-bottom: 1.5rem;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
             font-weight: 500;
         }
 
-        input[type="number"] {
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .input-field {
             width: 100%;
             padding: 0.75rem;
-            border: 1px solid #ddd;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
             border-radius: 4px;
             font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .slider-label {
+            display: block;
+            margin-bottom: 1rem;
         }
 
         input[type="range"] {
@@ -64,11 +75,11 @@
         .ratio-display {
             display: flex;
             justify-content: space-between;
-            margin: 0.5rem 0;
+            margin: 1rem 0;
             color: #666;
         }
 
-        button {
+        .calculate-button {
             width: 100%;
             padding: 1rem;
             background-color: #4CAF50;
@@ -80,12 +91,8 @@
             margin-top: 1rem;
         }
 
-        button:hover {
-            background-color: #45a049;
-        }
-
         .results {
-            margin-top: 2rem;
+            margin-top: 1.5rem;
             padding: 1rem;
             background-color: #f8f9fa;
             border-radius: 4px;
@@ -95,34 +102,29 @@
 </head>
 <body>
     <div class="nav-bar">
-        <a href="index.html" class="active">投資組合再平衡計算機</a>
+        <a href="index.html" class="active">投資組合計算機</a>
         <a href="index2.html">資產配置計算機</a>
     </div>
 
-    <div class="calculator">
+    <div class="calculator-card">
         <h2>投資組合再平衡計算機</h2>
         
-        <div class="input-group">
-            <label>目前股票金額</label>
-            <input type="number" id="stock-amount" placeholder="輸入股票現值">
+        <label class="input-label">目前股票金額</label>
+        <input type="number" class="input-field" id="stock-amount" placeholder="輸入股票現值">
+        
+        <label class="input-label">目前現金金額</label>
+        <input type="number" class="input-field" id="cash-amount" placeholder="輸入現金金額">
+        
+        <label class="slider-label">目標股票配置比例：<span id="ratio-value">50</span>%</label>
+        <input type="range" id="stock-ratio" min="0" max="100" value="50" step="0.1">
+        
+        <div class="ratio-display">
+            <span>股票：<span id="stock-percentage">50.0</span>%</span>
+            <span>現金：<span id="cash-percentage">50.0</span>%</span>
         </div>
 
-        <div class="input-group">
-            <label>目前現金金額</label>
-            <input type="number" id="cash-amount" placeholder="輸入現金金額">
-        </div>
-
-        <div class="input-group">
-            <label>目標股票比例：<span id="ratio-value">50</span>%</label>
-            <input type="range" id="stock-ratio" min="0" max="100" value="50">
-            <div class="ratio-display">
-                <span>股票：<span id="stock-percentage">50</span>%</span>
-                <span>現金：<span id="cash-percentage">50</span>%</span>
-            </div>
-        </div>
-
-        <button onclick="calculate()">計算再平衡</button>
-
+        <button class="calculate-button" onclick="calculate()">計算再平衡</button>
+        
         <div id="results" class="results"></div>
     </div>
 
@@ -134,9 +136,9 @@
 
         ratioSlider.oninput = function() {
             const value = this.value;
-            ratioValue.textContent = value;
-            stockPercentage.textContent = value;
-            cashPercentage.textContent = 100 - value;
+            ratioValue.textContent = parseFloat(value).toFixed(1);
+            stockPercentage.textContent = parseFloat(value).toFixed(1);
+            cashPercentage.textContent = (100 - parseFloat(value)).toFixed(1);
         };
 
         function formatCurrency(value) {
@@ -149,6 +151,7 @@
             const targetRatio = Number(ratioSlider.value) / 100;
 
             const totalAssets = stockAmount + cashAmount;
+            const currentStockRatio = (stockAmount / totalAssets) * 100;
             const targetStockAmount = totalAssets * targetRatio;
             const adjustment = targetStockAmount - stockAmount;
 
@@ -157,7 +160,7 @@
             results.innerHTML = `
                 <h3>計算結果</h3>
                 <p>總資產：${formatCurrency(totalAssets)} 元</p>
-                <p>目前股票比例：${((stockAmount / totalAssets) * 100).toFixed(1)}%</p>
+                <p>目前股票比例：${currentStockRatio.toFixed(1)}%</p>
                 <p>建議調整：${adjustment > 0 ? '買入' : '賣出'}股票 ${formatCurrency(Math.abs(adjustment))} 元</p>
             `;
         }
