@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投資計算工具</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .nav-bar {
+            background-color: #333;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .nav-bar button {
+            color: white;
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .nav-bar button.active {
+            background-color: #4CAF50;
+        }
+
+        .calculator-card {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .slider-label {
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 1rem 0;
+        }
+
+        .ratio-display {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            color: #666;
+        }
+
+        .calculate-button {
+            width: 100%;
+            padding: 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .results {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .calculator {
+            display: none;
+        }
+
+        .calculator.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <button onclick="showCalculator('calculator1')" class="active">投資組合再平衡計算機</button>
+        <button onclick="showCalculator('calculator2')">資產配置計算機</button>
+    </div>
+
+    <div id="calculator1" class="calculator active">
+        <div class="calculator-card">
+            <h2>投資組合再平衡計算機</h2>
+            
+            <label class="input-label">目前股票金額</label>
+            <input type="number" class="input-field" id="stock-amount1" placeholder="輸入股票現值">
+            
+            <label class="input-label">目前現金金額</label>
+            <input type="number" class="input-field" id="cash-amount1" placeholder="輸入現金金額">
+            
+            <label class="slider-label">目標股票配置比例：<span id="ratio-value1">50</span>%</label>
+            <input type="range" id="stock-ratio1" min="0" max="100" value="50" step="0.1">
+            
+            <div class="ratio-display">
+                <span>股票：<span id="stock-percentage1">50.0</span>%</span>
+                <span>現金：<span id="cash-percentage1">50.0</span>%</span>
+            </div>
+
+            <button class="calculate-button" onclick="calculate('1')">計算再平衡</button>
+            
+            <div id="results1" class="results"></div>
+        </div>
+    </div>
+
+    <div id="calculator2" class="calculator">
+        <div class="calculator-card">
+            <h2>資產配置計算機</h2>
+            
+            <label class="input-label">目前股票金額</label>
+            <input type="number" class="input-field" id="stock-amount2" placeholder="輸入股票現值">
+            
+            <label class="input-label">目前現金金額</label>
+            <input type="number" class="input-field" id="cash-amount2" placeholder="輸入現金金額">
+            
+            <label class="slider-label">目標股票配置比例：<span id="ratio-value2">50</span>%</label>
+            <input type="range" id="stock-ratio2" min="0" max="100" value="50" step="0.1">
+            
+            <div class="ratio-display">
+                <span>股票：<span id="stock-percentage2">50.0</span>%</span>
+                <span>現金：<span id="cash-percentage2">50.0</span>%</span>
+            </div>
+
+            <button class="calculate-button" onclick="calculate('2')">計算配置</button>
+            
+            <div id="results2" class="results"></div>
+        </div>
+    </div>
+
+    <script>
+        function showCalculator(calculatorId) {
+            // 隱藏所有計算機
+            document.querySelectorAll('.calculator').forEach(calc => {
+                calc.classList.remove('active');
+            });
+            
+            // 取消所有按鈕的活動狀態
+            document.querySelectorAll('.nav-bar button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // 顯示選中的計算機
+            document.getElementById(calculatorId).classList.add('active');
+            
+            // 設置對應按鈕的活動狀態
+            const buttonIndex = calculatorId === 'calculator1' ? 0 : 1;
+            document.querySelectorAll('.nav-bar button')[buttonIndex].classList.add('active');
+        }
+
+        // 為兩個計算機設置滑桿事件
+        ['1', '2'].forEach(id => {
+            const ratioSlider = document.getElementById(`stock-ratio${id}`);
+            const ratioValue = document.getElementById(`ratio-value${id}`);
+            const stockPercentage = document.getElementById(`stock-percentage${id}`);
+            const cashPercentage = document.getElementById(`cash-percentage${id}`);
+
+            ratioSlider.oninput = function() {
+                const value = this.value;
+                ratioValue.textContent = parseFloat(value).toFixed(1);
+                stockPercentage.textContent = parseFloat(value).toFixed(1);
+                cashPercentage.textContent = (100 - parseFloat(value)).toFixed(1);
+            };
+        });
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('zh-TW').format(value);
+        }
+
+        function calculate(id) {
+            const stockAmount = Number(document.getElementById(`stock-amount${id}`).value);
+            const cashAmount = Number(document.getElementById(`cash-amount${id}`).value);
+            const targetRatio = Number(document.getElementById(`stock-ratio${id}`).value) / 100;
+
+            const totalAssets = stockAmount + cashAmount;
+            const currentStockRatio = (stockAmount / totalAssets) * 100;
+            const targetStockAmount = totalAssets * targetRatio;
+            const adjustment = targetStockAmount - stockAmount;
+
+            const results = document.getElementById(`results${id}`);
+            results.style.display = 'block';
+            results.innerHTML = `
+                <h3>計算結果</h3>
+                <p>總資產：${formatCurrency(totalAssets)} 元</p>
+                <p>目前股票比例：${currentStockRatio.toFixed(1)}%</p>
+                <p>建議調整：${adjustment > 0 ? '買入' : '賣出'}股票 ${formatCurrency(Math.abs(adjustment))} 元</p>
+            `;
+        }
+    </script>
+</body>
+</html>
