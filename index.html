@@ -9,6 +9,74 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* 優化滑桿樣式 */
+        input[type="range"] {
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background .15s ease-in-out;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background .15s ease-in-out;
+            border: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+        }
+        
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #2563eb;
+        }
+
+        .slider-container {
+            width: 100%;
+            padding: 0 20px;
+            margin: 20px 0;
+            min-width: 300px;
+        }
+
+        /* 其他基本樣式保持不變 */
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            padding: 1.5rem;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin: 1rem 0;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div id="root"></div>
@@ -44,13 +112,20 @@
         );
         
         const Slider = ({ value, onValueChange, ...props }) => (
-            <input
-                type="range"
-                value={value}
-                onChange={e => onValueChange([e.target.valueAsNumber])}
-                className="w-full"
-                {...props}
-            />
+            <div className="slider-container">
+                <input
+                    type="range"
+                    value={value}
+                    onChange={e => onValueChange([e.target.valueAsNumber])}
+                    className="w-full"
+                    style={{
+                        width: '100%',
+                        minWidth: '300px',
+                        maxWidth: '600px'
+                    }}
+                    {...props}
+                />
+            </div>
         );
 
         // PieChart 組件
