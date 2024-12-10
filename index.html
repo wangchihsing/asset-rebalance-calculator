@@ -13,11 +13,14 @@
         /* 優化滑桿樣式 */
         input[type="range"] {
             height: 8px;
-            background: #ddd;
             border-radius: 4px;
             outline: none;
             -webkit-appearance: none;
             appearance: none;
+            background: linear-gradient(
+            to right,
+            #3b82f6 var(--value, 50%),
+            );
         }
         
         input[type="range"]::-webkit-slider-thumb {
@@ -116,12 +119,17 @@
                 <input
                     type="range"
                     value={value}
-                    onChange={e => onValueChange([e.target.valueAsNumber])}
+                    onChange={e => {
+                        const val = e.target.valueAsNumber;
+                        e.target.style.setProperty('--value', `${val}%`);
+                        onValueChange([val]);
+                    }}
                     className="w-full"
                     style={{
                         width: '100%',
                         minWidth: '300px',
-                        maxWidth: '600px'
+                        maxWidth: '600px',
+                        '--value': `${value}%`
                     }}
                     {...props}
                 />
