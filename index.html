@@ -317,24 +317,26 @@
                                 />
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
-                                      type="number"
-                                      value={formatPercentage(targetStockRatio)}
-                                      onChange={(e) => handleManualRatioInput(e.target.value, true)}
-                                      className="text-center"
-                                      min="0"
-                                      max="100"
-                                      step="0.01"
-                                />
-                                <Input
-                                  type="number"
-                                  value={formatPercentage(cashRatio)}
-                                  onChange={(e) => handleManualRatioInput(e.target.value, false)}
-                                  className="text-center"
-                                  min="0"
-                                  max="100"
-                                  step="0.01"
-                                />
-                            </div>
+                                        type="number"
+                                        value={formatPercentage(targetStockRatio)}
+                                        onChange={(e) => handleManualRatioInput(e.target.value, true)}
+                                        placeholder="股票比例 %"
+                                        className="text-center"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                    />                                        
+                                    <Input
+                                        type="number"
+                                        value={formatPercentage(cashRatio)}
+                                        onChange={(e) => handleManualRatioInput(e.target.value, false)}
+                                        className="text-center"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        placeholder="現金比例 %"
+                                    />
+                                </div>
 
                             {results && (
                                 <>
@@ -398,7 +400,7 @@
                                                     )}
                                                     {results.adjustment > 0 
                                                         ? `建議買入股票：${formatCurrency(Math.abs(results.adjustment))} 元` 
-                                                        : `建議賣出股票：${formatCurrency(Math.abs(results.adjustment))} 元`}
+                                                        : `建議賣出股票：${formatCurrency(Math.abs(results.adjustment))} 元`
                                                 </AlertDescription>
                                             </Alert>
                                         )}
