@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>資產再平衡計算機</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -315,19 +315,14 @@
                                             placeholder="輸入股票比例"
                                             className="text-center"
                                         /> 
-                                        <div className="text-gray-500 text-sm mt-1">輸入股票比例</div>
-                                    </div>
-                                    <div className="relative">
                                         <Input
                                             type="text"
-                                            value={targetStockRatio}
+                                            value={targetStockRatio === '' ? '100' : String(100 - Number(targetStockRatio))}
                                             onChange={(e) => handleManualRatioInput(e.target.value, false)}
                                             className="text-center"
-                                            placeholder="輸入股票比例"
+                                            placeholder="輸入現金比例"
                                         />
-                                        <div className="text-gray-500 text-sm mt-1">輸入現金比例</div>
                                     </div>
-                                </div>
 
                             {results && (
                                 <>
@@ -425,5 +420,10 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<RebalanceCalculator />);
     </script>
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+    console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+    return false;
+};
+</script>
 </body>
 </html>
