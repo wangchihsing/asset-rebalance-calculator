@@ -315,33 +315,26 @@
                                     step={0.01}
                                     className="w-full"
                                 />
-                                <div className="text-sm text-gray-500 mb-2">
-                                    股票:{formatPercentage(targetStockRatio)}% / 現金:{formatPercentage(cashRatio)}%
-                                </div>
-
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">股票比例</label>
-                                        <Input
-                                            type="number"
-                                            value={targetStockRatio}
-                                            onChange={(e) => setTargetStockRatio(Number(e.target.value))}
-                                            placeholder="輸入股票比例"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">現金比例</label>
                                     <Input
-                                        type="number"
-                                        value={cashRatio}
-                                        onChange={(e) => {
-                                            const value = Number(e.target.value);
-                                            setTargetStockRatio(100 - value);
-                                        }}
-                                        placeholder="輸入現金比例"
-                                    />
-                                </div>
-                            </div>
+                                      type="number"
+                                      value={formatPercentage(targetStockRatio)}
+                                      onChange={(e) => handleManualRatioInput(e.target.value, true)}
+                                      className="text-center"
+                                      min="0"
+                                      max="100"
+                                      step="0.01"
+                                />
+                                <Input
+                                  type="number"
+                                  value={formatPercentage(cashRatio)}
+                                  onChange={(e) => handleManualRatioInput(e.target.value, false)}
+                                  className="text-center"
+                                  min="0"
+                                  max="100"
+                                  step="0.01"
+                                />
+                               /div>
 
                             {results && (
                                 <>
