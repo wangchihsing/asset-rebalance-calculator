@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>資產再平衡計算機</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -217,12 +217,12 @@
                 if (!/^\d*\.?\d{0,2}$/.test(value) && value !== '') return;
                 let newValue = value === '' ? 0 : Number(value);
                 
-                if (typeof newValue === 'number' && newValue > 100) return;
+                if (newValue > 100) return;
                 
                 if (isStock) {
-                    setTargetStockRatio(value);
+                    setTargetStockRatio(value === '' ? 0 : value);
                 } else {
-                    setTargetStockRatio(value === '' ? '100' : String(100 - Number(value)));
+                    setTargetStockRatio(value === '' ? 100 : 100 - Number(value));
                 }
             };
 
@@ -307,22 +307,22 @@
                                     className="w-full"
                                 />
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="relative">
-                                        <Input
-                                            type="text"
-                                            value={targetStockRatio}
-                                            onChange={(e) => handleManualRatioInput(e.target.value, true)}
-                                            placeholder="輸入股票比例"
-                                            className="text-center"
-                                        /> 
-                                        <Input
-                                            type="text"
-                                            value={targetStockRatio === '' ? '100' : String(100 - Number(targetStockRatio))}
-                                            onChange={(e) => handleManualRatioInput(e.target.value, false)}
-                                            className="text-center"
-                                            placeholder="輸入現金比例"
-                                        />
-                                    </div>
+                                    <Input
+                                        type="text"
+                                        value={String(targetStockRatio)}
+                                        onChange={(e) => handleManualRatioInput(e.target.value, true)}
+                                        placeholder="股票比例 %"
+                                        className="text-center"
+                                    />                                        
+                                    <Input
+                                        type="text"
+                                        value={String(100 - Number(targetStockRatio))}
+                                        onChange={(e) => handleManualRatioInput(e.target.value, false)}
+                                        className="text-center"
+                                        placeholder="現金比例 %"
+                                    />
+                                </div>
+                            </div>
 
                             {results && (
                                 <>
@@ -420,10 +420,5 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<RebalanceCalculator />);
     </script>
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
-    console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
-    return false;
-};
-</script>
 </body>
 </html>
