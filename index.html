@@ -217,12 +217,12 @@
                 if (!/^\d*\.?\d{0,2}$/.test(value) && value !== '') return;
                 let newValue = value === '' ? 0 : Number(value);
                 
-                if (newValue > 100) return;
+                if (typeof newValue === 'number' && newValue > 100) return;
                 
                 if (isStock) {
-                    setTargetStockRatio(value === '' ? 0 : value);
+                    setTargetStockRatio(value);
                 } else {
-                    setTargetStockRatio(value === '' ? 100 : 100 - Number(value));
+                    setTargetStockRatio(value === '' ? '100' : String(100 - Number(value)));
                 }
             };
 
@@ -310,9 +310,9 @@
                                     <div className="relative">
                                         <Input
                                             type="text"
-                                            value={targetStockRatio === 0 ? '' : String(targetStockRatio)}
+                                            value={targetStockRatio}
                                             onChange={(e) => handleManualRatioInput(e.target.value, true)}
-                                            placeholder="  "
+                                            placeholder="輸入股票比例"
                                             className="text-center"
                                         /> 
                                         <div className="text-gray-500 text-sm mt-1">輸入股票比例</div>
@@ -320,10 +320,10 @@
                                     <div className="relative">
                                         <Input
                                             type="text"
-                                            value={targetStockRatio === 100 ? '' : String(100 - Number(targetStockRatio))}
+                                            value={targetStockRatio}
                                             onChange={(e) => handleManualRatioInput(e.target.value, false)}
                                             className="text-center"
-                                            placeholder="   "
+                                            placeholder="輸入股票比例"
                                         />
                                         <div className="text-gray-500 text-sm mt-1">輸入現金比例</div>
                                     </div>
