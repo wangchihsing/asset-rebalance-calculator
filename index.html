@@ -220,7 +220,7 @@
                 if (newValue > 100) return;
                 
                 if (isStock) {
-                    setTargetStockRatio(value === '' ? 0 : value);
+                    setTargetStockRatio(value === '' ? 0 : Number(value);
                 } else {
                     setTargetStockRatio(value === '' ? 100 : 100 - Number(value));
                 }
