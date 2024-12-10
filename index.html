@@ -319,13 +319,13 @@
                                     />                                        
                                     <Input
                                         type="number"
-                                        value={formatPercentage(cashRatio)}
-                                        onChange={(e) => handleManualRatioInput(e.target.value, false)}
+                                        value={currentCash}
+                                        onChange={(e) => setCurrentCash(e.target.value)}
                                         className="text-center"
                                         min="0"
                                         max="100"
                                         step="0.01"
-                                        placeholder="現金比例 %"
+                                        placeholder="輸入現金金額"
                                     />
                                 </div>
                             </div>
