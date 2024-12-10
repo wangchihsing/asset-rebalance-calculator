@@ -217,11 +217,14 @@
                 const numValue = value === '' ? 0 : Number(value);
                 
                 if (numValue > 100) return;
+
+                const formattedValue = parseFloat(numValue.toFixed(2));
+
     
                 if (isStock) {
-                    setTargetStockRatio(numValue);
+                    setTargetStockRatio(formattedValue);
                 } else {
-                    setTargetStockRatio(100 - numValue);
+                    setTargetStockRatio(parseFloat((100 - formattedValue).toFixed(2)));
                 }
             };
             
@@ -308,8 +311,11 @@
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
                                         type="number"
-                                        value={targetStockRatio || ''}
-                                        onChange={(e) => handleManualRatioInput(e.target.value, true)}
+                                        value={(targetStockRatio || '').tofixed(2)}
+                                        onChange={(e) => {
+                                            const value = parseFloat(e.target.value).toFixed(2); // 格式化輸入值
+                                            handleManualRatioInput(value, true);
+                                        }}
                                         placeholder="輸入股票比例 %"
                                         className="text-center"
                                         min="0"
@@ -318,8 +324,11 @@
                                     />                                        
                                     <Input
                                         type="number"
-                                        value={(100 - targetStockRatio) || ''}
-                                        onChange={(e) => handleManualRatioInput(e.target.value, false)}
+                                        value={(100 - targetStockRatio) || '').tofixed(2)}
+                                        onChange={(e) => {
+                                            const value = parseFloat(e.target.value).toFixed(2); // 格式化輸入值
+                                            handleManualRatioInput(value, false);
+                                        }}
                                         placeholder="輸入現金比例 %"
                                         className="text-center"
                                         min="0"
