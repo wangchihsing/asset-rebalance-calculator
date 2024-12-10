@@ -283,24 +283,24 @@
                     <CardContent>
                         <div className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">目前股票金額</label>
-                                    <Input
-                                        type="number"
-                                        value={currentStocks}
-                                        onChange={(e) => setCurrentStocks(e.target.value)}
-                                        placeholder="輸入股票現值"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">目前現金金額</label>
-                                    <Input
-                                        type="number"
-                                        value={currentCash}
-                                        onChange={(e) => setCurrentCash(e.target.value)}
-                                        placeholder="輸入現金金額"
-                                    />
-                                </div>
+                                <Input
+                                    type="number"
+                                    value={currentStocks}
+                                    onChange={(e) => {
+                                        const value = Math.min(100, Math.max(0, Number(e.target.value)));
+                                        setTargetStockRatio(value);
+                                    }}
+                                    className="text-center"
+                                />
+                                <Input
+                                    type="number"
+                                    value={cashRatio}
+                                    onChange={(e) => {
+                                        const value = Math.min(100, Math.max(0, Number(e.target.value)));
+                                        setTargetStockRatio(100 - value);
+                                    }}
+                                    className="text-center"
+                                />
                             </div>
 
                             <div className="pt-4">
