@@ -146,7 +146,6 @@
                         '--value': `${value}%`
                     }}
                     {...props}
-                />
             </div>
         );
 
@@ -400,7 +399,7 @@
                                                     )}
                                                     {results.adjustment > 0 
                                                         ? `建議買入股票：${formatCurrency(Math.abs(results.adjustment))} 元` 
-                                                        : `建議賣出股票：${formatCurrency(Math.abs(results.adjustment))} 元`
+                                                        : `建議賣出股票：${formatCurrency(Math.abs(results.adjustment))} 元`}
                                                 </AlertDescription>
                                             </Alert>
                                         )}
