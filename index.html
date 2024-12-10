@@ -320,25 +320,25 @@
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Input
-                                        type="number"
-                                        value={formatPercentage(targetStockRatio)}
-                                        onChange={(e) => handleManualRatioInput(e.target.value, true)}
-                                        className="text-center"
-                                        min="0"
-                                        max="100"
-                                        step="0.01"
-                                        placeholder="0.00"
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">股票比例</label>
+                                        <Input
+                                            type="number"
+                                            value={targetStockRatio}
+                                            onChange={(e) => setTargetStockRatio(Number(e.target.value))}
+                                            placeholder="輸入股票比例"
                                     />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">現金比例</label>
                                     <Input
                                         type="number"
-                                        value={formatPercentage(cashRatio)}
-                                        onChange={(e) => handleManualRatioInput(e.target.value, false)}
-                                        className="text-center"
-                                        min="0"
-                                        max="100"
-                                        step="0.01"
-                                        placeholder="0.00"
+                                        value={cashRatio}
+                                        onChange={(e) => {
+                                            const value = Number(e.target.value);
+                                            setTargetStockRatio(100 - value);
+                                        }}
+                                        placeholder="輸入現金比例"
                                     />
                                 </div>
                             </div>
