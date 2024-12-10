@@ -309,17 +309,17 @@
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
                                         type="text"
-                                        value={String(targetStockRatio)}
+                                        value={targetStockRatio === 0 ? '' : String(targetStockRatio)}
                                         onChange={(e) => handleManualRatioInput(e.target.value, true)}
-                                        placeholder="股票比例 %"
+                                        placeholder="輸入股票比例 %"
                                         className="text-center"
                                     />                                        
                                     <Input
                                         type="text"
-                                        value={String(100 - Number(targetStockRatio))}
+                                        value={targetStockRatio === 100 ? '0' : String(100 - Number(targetStockRatio))}
                                         onChange={(e) => handleManualRatioInput(e.target.value, false)}
                                         className="text-center"
-                                        placeholder="現金比例 %"
+                                        placeholder="輸入現金比例 %"
                                     />
                                 </div>
                             </div>
