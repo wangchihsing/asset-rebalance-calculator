@@ -19,12 +19,30 @@
             <div className={`bg-white rounded-lg shadow-sm p-6 ${className}`}>{children}</div>
         );
         
-        const CardHeader = ({ children }) => <div className="mb-6">{children}</div>;
-        const CardTitle = ({ children, className }) => <h2 className={`text-xl font-bold ${className}`}>{children}</h2>;
-        const CardContent = ({ children, className }) => <div className={className}>{children}</div>;
-        const Input = React.forwardRef((props, ref) => <input {...props} ref={ref} className={`w-full p-2 border rounded-md ${props.className}`} />);
-        const Alert = ({ children, className }) => <div className={`p-4 rounded-md ${className}`}>{children}</div>;
-        const AlertDescription = ({ children }) => <div className="text-sm">{children}</div>;
+        const CardHeader = ({ children }) => (
+            <div className="mb-6">{children}</div>
+        );
+        
+        const CardTitle = ({ children, className }) => (
+            <h2 className={`text-xl font-bold ${className}`}>{children}</h2>
+        );
+        
+        const CardContent = ({ children, className }) => (
+            <div className={className}>{children}</div>
+        );
+        
+        const Input = React.forwardRef((props, ref) => (
+            <input {...props} ref={ref} className={`w-full p-2 border rounded-md ${props.className}`} />
+        ));
+        
+        const Alert = ({ children, className }) => (
+            <div className={`p-4 rounded-md ${className}`}>{children}</div>
+        );
+        
+        const AlertDescription = ({ children }) => (
+            <div className="text-sm">{children}</div>
+        );
+        
         const Slider = ({ value, onValueChange, ...props }) => (
             <input
                 type="range"
@@ -103,6 +121,19 @@
                 setTargetStockRatio(Number(formatPercentage(value)));
             };
 
+            const handleManualRatioInput = (value, isStock = true) => {
+                let newValue = value === '' ? 0 : Number(parseFloat(value).toFixed(2));
+                if (isNaN(newValue)) return;
+                
+                newValue = Math.min(100, Math.max(0, newValue));
+                
+                if (isStock) {
+                    setTargetStockRatio(newValue);
+                } else {
+                    setTargetStockRatio(100 - newValue);
+                }
+            };
+
             const calculateRebalance = () => {
                 const totalStocks = Number(currentStocks);
                 const totalCash = Number(currentCash);
@@ -144,7 +175,11 @@
                 <Card className="max-w-2xl mx-auto my-8">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                            </svg>
                             資產再平衡計算機
                         </CardTitle>
                     </CardHeader>
@@ -171,7 +206,7 @@
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="pt-4">
                                 <label className="block text-sm font-medium mb-1">
                                     目標股票配置比例：{formatPercentage(targetStockRatio)}%
                                 </label>
@@ -181,15 +216,37 @@
                                     min={0}
                                     max={100}
                                     step={0.01}
+                                    className="mb-4"
                                 />
-                                <div className="text-sm text-gray-500 mt-1">
+                                <div className="text-sm text-gray-500 mb-2">
                                     股票:{formatPercentage(targetStockRatio)}% / 現金:{formatPercentage(cashRatio)}%
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Input
+                                        type="number"
+                                        value={formatPercentage(targetStockRatio)}
+                                        onChange={(e) => handleManualRatioInput(e.target.value, true)}
+                                        className="text-center"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                    />
+                                    <Input
+                                        type="number"
+                                        value={formatPercentage(cashRatio)}
+                                        onChange={(e) => handleManualRatioInput(e.target.value, false)}
+                                        className="text-center"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                    />
                                 </div>
                             </div>
 
                             {results && (
                                 <>
-                                    <div className="grid grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-2 gap-8 mt-6">
                                         <div className="text-center">
                                             <div className="font-medium mb-2">目前配置</div>
                                             <div className="w-48 h-48 mx-auto">
@@ -198,16 +255,15 @@
                                             <div className="mt-2 space-y-1">
                                                 <div className="flex justify-center items-center gap-2">
                                                     <div className="w-3 h-3 bg-[#3b82f6]"></div>
-                                                    <div className="text-sm">
-                                                        股票 {formatPercentage(results.currentStockRatio)}%
-                                                    </div>
+                                                    <div className="text-sm">股票 {formatPercentage(results.currentStockRatio)}%</div>
                                                 </div>
                                                 <div className="flex justify-center items-center gap-2">
                                                     <div className="w-3 h-3 bg-[#93c5fd]"></div>
-                                                    <div className="text-sm">
-                                                        現金 {formatPercentage(results.currentCashRatio)}%
-                                                    </div>
+                                                    <div className="text-sm">現金 {formatPercentage(results.currentCashRatio)}%</div>
                                                 </div>
+                                            </div>
+                                            <div className="text-sm text-gray-600 mt-2">
+                                                總資產：{formatCurrency(results.totalAssets)} 元
                                             </div>
                                         </div>
 
@@ -219,16 +275,15 @@
                                             <div className="mt-2 space-y-1">
                                                 <div className="flex justify-center items-center gap-2">
                                                     <div className="w-3 h-3 bg-[#059669]"></div>
-                                                    <div className="text-sm">
-                                                        股票 {formatPercentage(targetStockRatio)}%
-                                                    </div>
+                                                    <div className="text-sm">股票 {formatPercentage(targetStockRatio)}%</div>
                                                 </div>
                                                 <div className="flex justify-center items-center gap-2">
                                                     <div className="w-3 h-3 bg-[#86efac]"></div>
-                                                    <div className="text-sm">
-                                                        現金 {formatPercentage(cashRatio)}%
-                                                    </div>
+                                                    <div className="text-sm">現金 {formatPercentage(cashRatio)}%</div>
                                                 </div>
+                                            </div>
+                                            <div className="text-sm text-gray-600 mt-2">
+                                                調整後股票：{formatCurrency(results.targetStocks)} 元
                                             </div>
                                         </div>
                                     </div>
@@ -239,9 +294,15 @@
                                             <Alert className={results.adjustment > 0 ? "bg-green-50" : "bg-blue-50"}>
                                                 <AlertDescription className="flex items-center gap-2">
                                                     {results.adjustment > 0 ? (
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                                                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                                            <polyline points="17 6 23 6 23 12"/>
+                                                        </svg>
                                                     ) : (
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                                                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+                                                            <polyline points="17 18 23 18 23 12"/>
+                                        </svg>
                                                     )}
                                                     {results.adjustment > 0 
                                                         ? `建議買入股票：${formatCurrency(Math.abs(results.adjustment))} 元` 
