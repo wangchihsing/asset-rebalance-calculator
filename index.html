@@ -324,7 +324,7 @@
                                     />                                        
                                     <Input
                                         type="number"
-                                        value={(100 - targetStockRatio) || '').tofixed(2)}
+                                        value={(100 - targetStockRatio).toFixed(2)}
                                         onChange={(e) => {
                                             const value = parseFloat(e.target.value).toFixed(2); // 格式化輸入值
                                             handleManualRatioInput(value, false);
