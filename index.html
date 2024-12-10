@@ -307,22 +307,27 @@
                                     className="w-full"
                                 />
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Input
-                                        type="text"
-                                        value={String(targetStockRatio)}
-                                        onChange={(e) => handleManualRatioInput(e.target.value, true)}
-                                        placeholder="股票比例 %"
-                                        className="text-center"
-                                    />                                        
-                                    <Input
-                                        type="text"
-                                        value={String(100 - Number(targetStockRatio))}
-                                        onChange={(e) => handleManualRatioInput(e.target.value, false)}
-                                        className="text-center"
-                                        placeholder="現金比例 %"
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            type="text"
+                                            value={targetStockRatio === 0 ? '' : String(targetStockRatio)}
+                                            onChange={(e) => handleManualRatioInput(e.target.value, true)}
+                                            placeholder="  "
+                                            className="text-center"
+                                        /> 
+                                        <div className="text-gray-500 text-sm mt-1">輸入股票比例</div>
+                                    </div>
+                                    <div className="relative">
+                                        <Input
+                                            type="text"
+                                            value={targetStockRatio === 100 ? '' : String(100 - Number(targetStockRatio))}
+                                            onChange={(e) => handleManualRatioInput(e.target.value, false)}
+                                            className="text-center"
+                                            placeholder="   "
+                                        />
+                                        <div className="text-gray-500 text-sm mt-1">輸入現金比例</div>
+                                    </div>
                                 </div>
-                            </div>
 
                             {results && (
                                 <>
