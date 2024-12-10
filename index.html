@@ -215,17 +215,28 @@
 
             const handleManualRatioInput = (value, isStock = true) => {
                 if (!/^\d*\.?\d{0,2}$/.test(value) && value !== '') return;
-                let newValue = value === '' ? 0 : Number(value);
-                
-                if (newValue > 100) return;
                 
                 if (isStock) {
-                    setTargetStockRatio(value === '' ? 0 : Number(value));
+                    if (value === '') {
+                        setTargetStockRatio(0);
+                    } else {
+                        const numValue = Number(value);
+                        if (numValue <= 100) {
+                            setTargetStockRatio(numValue);
+                        }
+                    }
                 } else {
-                    setTargetStockRatio(value === '' ? 100 : 100 - Number(value));
+                    if (value === '') {
+                        setTargetStockRatio(100);
+                    } else {
+                        const numValue = Number(value);
+                        if (numValue <= 100) {
+                            setTargetStockRatio(100 - numValue);
+                        }
+                    }
                 }
             };
-
+            
             const calculateRebalance = () => {
                 const totalStocks = Number(currentStocks);
                 const totalCash = Number(currentCash);
