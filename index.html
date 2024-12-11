@@ -10,7 +10,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        /* 原有的樣式保持不變 */
         input[type="range"] {
             height: 8px;
             border-radius: 4px;
@@ -72,13 +71,125 @@
             margin: 20px 0;
             min-width: 300px;
         }
+
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            padding: 1.5rem;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin: 1rem 0;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
     <div id="root"></div>
 
     <script type="text/babel">
-        // 組件定義
+        // 基礎組件定義
+        const Card = ({ children, className = "" }) => (
+            <div className={`bg-white rounded-lg shadow-sm p-6 ${className}`}>{children}</div>
+        );
+        
+        const CardHeader = ({ children }) => (
+            <div className="mb-6">{children}</div>
+        );
+        
+        const CardTitle = ({ children, className }) => (
+            <h2 className={`text-xl font-bold ${className}`}>{children}</h2>
+        );
+        
+        const CardContent = ({ children, className }) => (
+            <div className={className}>{children}</div>
+        );
+        
+        const Input = React.forwardRef((props, ref) => (
+            <input {...props} ref={ref} className={`w-full p-2 border rounded-md ${props.className}`} />
+        ));
+        
+        const Alert = ({ children, className }) => (
+            <div className={`p-4 rounded-md ${className}`}>{children}</div>
+        );
+        
+        const AlertDescription = ({ children }) => (
+            <div className="text-sm">{children}</div>
+        );
+</script>
+</body>
+</html>
+const Slider = ({ value, onValueChange, ...props }) => (
+            <div className="slider-container">
+                <input
+                    type="range"
+                    value={value[0]}
+                    onChange={e => {
+                        const val = e.target.valueAsNumber;
+                        e.target.style.setProperty('--value', `${val}%`);
+                        onValueChange([val]);
+                    }}
+                    className="w-full"
+                    style={{
+                        width: '100%',
+                        minWidth: '300px',
+                        maxWidth: '600px',
+                        '--value': `${value[0]}%`
+                    }}
+                    {...props}
+                />
+            </div>
+        );
+
+        const PieChart = ({ data, colors }) => {
+            const total = data.reduce((sum, item) => sum + item.value, 0);
+            let startAngle = 0;
+            
+            return (
+                <svg viewBox="-100 -100 200 200" style={{ transform: 'rotate(-90deg)' }}>
+                    {data.map((item, index) => {
+                        const angle = (item.value / total) * 360;
+                        const largeArcFlag = angle > 180 ? 1 : 0;
+                        const endAngle = startAngle + angle;
+                        
+                        const startRad = (startAngle * Math.PI) / 180;
+                        const endRad = (endAngle * Math.PI) / 180;
+                        
+                        const x1 = 60 * Math.cos(startRad);
+                        const y1 = 60 * Math.sin(startRad);
+                        const x2 = 60 * Math.cos(endRad);
+                        const y2 = 60 * Math.sin(endRad);
+                        
+                        const x1Inner = 30 * Math.cos(startRad);
+                        const y1Inner = 30 * Math.sin(startRad);
+                        const x2Inner = 30 * Math.cos(endRad);
+                        const y2Inner = 30 * Math.sin(endRad);
+                        
+                        const path = [
+                            `M ${x1} ${y1}`,
+                            `A 60 60 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                            `L ${x2Inner} ${y2Inner}`,
+                            `A 30 30 0 ${largeArcFlag} 0 ${x1Inner} ${y1Inner}`,
+                            'Z'
+                        ].join(' ');
+                        
+                        startAngle += angle;
+                        
+                        return <path key={index} d={path} fill={colors[index]} stroke="white" strokeWidth="1" />;
+                    })}
+                </svg>
+            );
+        };
+
         const RebalanceCalculator = () => {
             // State 定義
             const [currentStocks, setCurrentStocks] = React.useState('');
@@ -89,7 +200,6 @@
             const [isLoading, setIsLoading] = React.useState(false);
             const [error, setError] = React.useState('');
 
-            // 常數定義
             const COLORS = {
                 current: ['#3b82f6', '#93c5fd'],
                 target: ['#059669', '#86efac']
@@ -158,7 +268,7 @@
                 }
             };
 
-            // 以下要繼續嗎？這只是第一部分的代碼。
+            // 格式化函數和其他輔助函數將在下一部分繼續...
             // 格式化函數
             const formatCurrency = (value) => {
                 return new Intl.NumberFormat('zh-TW', {
@@ -175,26 +285,6 @@
             // 目標比例變更處理
             const handleTargetRatioChange = (value) => {
                 setTargetStockRatio(Number(formatPercentage(value)));
-            };
-
-            const handleManualRatioInput = (value, isStock = true) => {
-                if (value === '') {
-                    if (isStock) {
-                        setTargetStockRatio('');
-                    } else {
-                        setTargetStockRatio(100);
-                    }
-                    return;
-                }
-
-                const numValue = Number(value);
-                if (numValue > 100) return;
-
-                if (isStock) {
-                    setTargetStockRatio(numValue);
-                } else {
-                    setTargetStockRatio(100 - numValue);
-                }
             };
 
             // 計算再平衡
@@ -219,7 +309,7 @@
 
             const results = currentStocks && currentCash ? calculateRebalance() : null;
             const cashRatio = Number(formatPercentage(100 - targetStockRatio));
-
+            
             // 圖表數據計算
             const getCurrentChartData = () => {
                 if (!results) return [];
@@ -236,7 +326,7 @@
                 ];
             };
 
-            // JSX 渲染部分
+            // 開始渲染部分
             return (
                 <Card className="max-w-2xl mx-auto my-8">
                     <CardHeader>
@@ -282,6 +372,7 @@
                                 )}
                             </div>
 
+                     
                             {error && (
                                 <Alert className="bg-red-50">
                                     <AlertDescription className="text-red-600">
@@ -290,7 +381,7 @@
                                 </Alert>
                             )}
 
-                            {/* 原有的數值輸入區域 */}
+                            {/* 資產輸入區域 */}
                             <div className="grid grid-cols-2 gap-4">
                                 <Input
                                     type="number"
@@ -308,7 +399,6 @@
                                 />
                             </div>
 
-                            {/* 是否需要繼續提供剩餘的代碼？ */}
                             {/* 目標比例設定區域 */}
                             <div className="pt-4">
                                 <label className="block text-sm font-medium mb-1">
@@ -362,6 +452,7 @@
                             {results && (
                                 <>
                                     <div className="grid grid-cols-2 gap-8 mt-6">
+                                        {/* 目前配置圖表 */}
                                         <div className="text-center">
                                             <div className="font-medium mb-2">目前配置</div>
                                             <div className="w-48 h-48 mx-auto">
@@ -382,6 +473,7 @@
                                             </div>
                                         </div>
 
+                                        {/* 目標配置圖表 */}
                                         <div className="text-center">
                                             <div className="font-medium mb-2">目標配置</div>
                                             <div className="w-48 h-48 mx-auto">
