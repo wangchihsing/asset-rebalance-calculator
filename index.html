@@ -318,8 +318,13 @@
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
                                         type="number"
-                                        value={targetStockRatio === '' ? '' : formatPercentage(targetStockRatio)}
-                                        onChange={(e) => handleManualRatioInput(e.target.value, true)}
+                                        value={targetStockRatio === '' ? '' : Number(targetStockRatio).toFixed(2)}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                                                setTargetStockRatio(value);
+                                            }
+                                        }}
                                         placeholder="輸入股票比例 %"
                                         className="text-center"
                                         min="0"
@@ -328,8 +333,13 @@
                                     />                                        
                                     <Input
                                         type="number"
-                                        value={targetStockRatio === '' ? '' : formatPercentage(100 - targetStockRatio)}
-                                        onChange={(e) => handleManualRatioInput(e.target.value, false)}
+                                        value={targetStockRatio === '' ? '' : (100 - Number(targetStockRatio)).toFixed(2)}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                                                setTargetStockRatio(100 - Number(value));
+                                            }
+                                        }}
                                         placeholder="輸入現金比例 %"
                                         className="text-center"
                                         min="0"
