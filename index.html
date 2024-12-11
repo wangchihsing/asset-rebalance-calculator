@@ -321,7 +321,9 @@
                                         value={targetStockRatio}
                                         onChange={(e) => {
                                             const value = e.target.value;
-                                            const numValue = Number(value);
+                                            if (value.includes('.') && value.split('.')[1].length > 2) {
+                                                return;
+                                            }
                                             if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
                                                 const formattedValue = value === '' ? '' : Number(value);
                                                 setTargetStockRatio(formattedValue);
@@ -335,6 +337,9 @@
                                         value={targetStockRatio === '' ? '' : (100 - targetStockRatio)}
                                         onChange={(e) => {
                                             const value = e.target.value;
+                                            if (value.includes('.') && value.split('.')[1].length > 2) {
+                                                return;
+                                            }
                                             if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
                                                 const formattedValue = value === '' ? '' : Number(value);
                                                 setTargetStockRatio(100 - formattedValue);
