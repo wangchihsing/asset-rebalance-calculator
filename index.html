@@ -97,7 +97,6 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // 基礎組件定義
         const Card = ({ children, className = "" }) => (
             <div className={`bg-white rounded-lg shadow-sm p-6 ${className}`}>{children}</div>
         );
@@ -125,7 +124,7 @@
         const AlertDescription = ({ children }) => (
             <div className="text-sm">{children}</div>
         );
-
+        
         const Slider = ({ value, onValueChange, ...props }) => (
             <div className="slider-container">
                 <input
@@ -189,57 +188,15 @@
         };
 
         const RebalanceCalculator = () => {
-            // State 定義
             const [currentStocks, setCurrentStocks] = React.useState('');
             const [currentCash, setCurrentCash] = React.useState('');
             const [targetStockRatio, setTargetStockRatio] = React.useState(50.00);
-            const [stockCode, setStockCode] = React.useState('');
-            const [stockPrice, setStockPrice] = React.useState(null);
-            const [isLoading, setIsLoading] = React.useState(false);
-            const [error, setError] = React.useState('');
 
             const COLORS = {
                 current: ['#3b82f6', '#93c5fd'],
                 target: ['#059669', '#86efac']
             };
 
-            // 驗證股票代碼
-            const validateStockCode = (code) => {
-                code = code.trim();
-                
-                if (!code) {
-                    return { isValid: false, message: '請輸入股票代碼' };
-                }
-                
-                const stockCodePattern = /^[A-Za-z0-9]{1,6}$/;
-                
-                if (!stockCodePattern.test(code)) {
-                    return { 
-                        isValid: false, 
-                        message: '股票代碼格式不正確（請輸入1-6位的數字或英文）' 
-                    };
-                }
-                
-                return { isValid: true, message: '' };
-            };
-
-            // 取得股票價格
-            const fetchStockPrice = async () => {
-                try {
-                    const response = await fetch(`https://www.twse.com.tw/exchangeReport/STOCK_DAY_AVG?response=json&date=${getFormattedDate()}&stockNo=${stockCode}`);
-                    const data = await response.json();
-                    if (data.data && data.data.length > 0) {
-                        const price = parseFloat(data.data[data.data.length-1][1]);
-                        setStockPrice(price);
-                        setCurrentStocks(price);
-                    }
-                } catch (err) {
-                    setError('獲取股票資訊時發生錯誤，請稍後再試');
-                }
-            };
-                
-            // 格式化函數和其他輔助函數將在下一部分繼續...
-            // 格式化函數
             const formatCurrency = (value) => {
                 return new Intl.NumberFormat('zh-TW', {
                     style: 'decimal',
@@ -252,12 +209,32 @@
                 return Number(value).toFixed(2);
             };
 
-            // 目標比例變更處理
             const handleTargetRatioChange = (value) => {
                 setTargetStockRatio(Number(formatPercentage(value)));
             };
 
-            // 計算再平衡
+            const handleManualRatioInput = (value, isStock = true) => {
+                if (value === '') {
+                    if (isStock) {
+                        setTargetStockRatio('');
+                    } else {
+                        setTargetStockRatio(100);
+                    }
+                    return;
+                }
+
+                const numValue = Number(value);
+                if (numValue > 100) return;
+
+                if (isStock) {
+                    setTargetStockRatio(numValue);
+                } else {
+                    setTargetStockRatio(100 - numValue);
+                }
+            };
+               
+    
+            
             const calculateRebalance = () => {
                 const totalStocks = Number(currentStocks);
                 const totalCash = Number(currentCash);
@@ -280,7 +257,6 @@
             const results = currentStocks && currentCash ? calculateRebalance() : null;
             const cashRatio = Number(formatPercentage(100 - targetStockRatio));
             
-            // 圖表數據計算
             const getCurrentChartData = () => {
                 if (!results) return [];
                 return [
@@ -296,7 +272,6 @@
                 ];
             };
 
-            // 開始渲染部分
             return (
                 <Card className="max-w-2xl mx-auto my-8">
                     <CardHeader>
@@ -311,47 +286,6 @@
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-6">
-                            {/* 股票代碼輸入區域 */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="relative">
-                                    <Input
-                                        type="text"
-                                        value={stockCode}
-                                        onChange={(e) => {
-                                            const value = e.target.value.trim().toUpperCase();
-                                            setStockCode(value);
-                                        }}
-                                        placeholder="輸入股票代碼（如：2330、00878）"
-                                        className="text-center"
-                                        maxLength="6"
-                                    />
-                                    <button
-                                        onClick={fetchStockPrice}
-                                        disabled={isLoading}
-                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-                                    >
-                                        {isLoading ? '載入中...' : '查詢'}
-                                    </button>
-                                </div>
-                                {stockPrice && (
-                                    <div className="flex items-center justify-center">
-                                        <span className="text-green-600 font-medium">
-                                            股價：{stockPrice} 元
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                     
-                            {error && (
-                                <Alert className="bg-red-50">
-                                    <AlertDescription className="text-red-600">
-                                        {error}
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-
-                            {/* 資產輸入區域 */}
                             <div className="grid grid-cols-2 gap-4">
                                 <Input
                                     type="number"
@@ -369,7 +303,6 @@
                                 />
                             </div>
 
-                            {/* 目標比例設定區域 */}
                             <div className="pt-4">
                                 <label className="block text-sm font-medium mb-1">
                                     目標股票配置比例：{formatPercentage(targetStockRatio)}%
@@ -398,7 +331,7 @@
                                         }}
                                         placeholder="輸入股票比例 %"
                                         className="text-center"
-                                    />
+                                    />                                        
                                     <Input
                                         type="number"
                                         value={targetStockRatio === '' ? '' : Number((100 - targetStockRatio).toFixed(2))}
@@ -418,11 +351,9 @@
                                 </div>
                             </div>
 
-                            {/* 結果顯示區域 */}
                             {results && (
                                 <>
                                     <div className="grid grid-cols-2 gap-8 mt-6">
-                                        {/* 目前配置圖表 */}
                                         <div className="text-center">
                                             <div className="font-medium mb-2">目前配置</div>
                                             <div className="w-48 h-48 mx-auto">
@@ -443,7 +374,6 @@
                                             </div>
                                         </div>
 
-                                        {/* 目標配置圖表 */}
                                         <div className="text-center">
                                             <div className="font-medium mb-2">目標配置</div>
                                             <div className="w-48 h-48 mx-auto">
