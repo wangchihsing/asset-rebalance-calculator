@@ -317,24 +317,26 @@
                                 />
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
-                                        type="text"
-                                        value={targetStockRatio === '' ? '' : Number(targetStockRatio).toFixed(2)}
+                                        type="number"
+                                        value={targetStockRatio}
                                         onChange={(e) => {
                                             const value = e.target.value;
-                                            if (value === '' || (/^\d*\.?\d*$/.test(value) && Number(value) >= 0 && Number(value) <= 100)) {
-                                                setTargetStockRatio(value);
+                                            const numValue = Number(value);
+                                            if (value === '' || (numValue >= 0 && numValue <= 100)) {
+                                                setTargetStockRatio(Number(Number(value).toFixed(2)));
                                             }
                                         }}
                                         placeholder="輸入股票比例 %"
                                         className="text-center"
                                     />                                        
                                     <Input
-                                        type="text"
-                                        value={targetStockRatio === '' ? '' : (100 - Number(targetStockRatio)).toFixed(2)}
+                                        type="number"
+                                        value={targetStockRatio === '' ? '' : (100 - Number(targetStockRatio))}
                                         onChange={(e) => {
                                             const value = e.target.value;
-                                           if (value === '' || (/^\d*\.?\d*$/.test(value) && Number(value) >= 0 && Number(value) <= 100)) {
-                                                setTargetStockRatio(100 - Number(value));
+                                            const numValue = Number(value);
+                                            if (value === '' || (numValue >= 0 && numValue <= 100)) {
+                                                setTargetStockRatio(Number((100 - Number(value)).toFixed(2)));
                                             }
                                         }}
                                         placeholder="輸入現金比例 %"
