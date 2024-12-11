@@ -225,43 +225,19 @@
 
             // 取得股票價格
             const fetchStockPrice = async () => {
-                const validation = validateStockCode(stockCode);
-                
-                if (!validation.isValid) {
-                    setError(validation.message);
-                    return;
-                }
-
-                setIsLoading(true);
-                setError('');
-                
                 try {
-                    const formattedCode = stockCode.trim().toUpperCase();
-                    const queryCode = formattedCode.endsWith('TW') ? 
-                        formattedCode : `${formattedCode}.TW`;
-                        
-                    const response = await fetch(`https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_${stockCode}.tw`);
-                        
-                    if (!response.ok) {
-                        throw new Error('無法獲取股票資訊');
-                    }
-
+                    const response = await fetch(`https://www.twse.com.tw/exchangeReport/STOCK_DAY_AVG?response=json&date=${getFormattedDate()}&stockNo=${stockCode}`);
                     const data = await response.json();
-                    const price = data?.tick?.[0]?.p;
-                    
-                    if (price) {
+                    if (data.data && data.data.length > 0) {
+                        const price = parseFloat(data.data[data.data.length-1][1]);
                         setStockPrice(price);
                         setCurrentStocks(price);
-                    } else {
-                        setError('無法獲取股票價格，請確認股票代碼是否正確');
                     }
                 } catch (err) {
                     setError('獲取股票資訊時發生錯誤，請稍後再試');
-                } finally {
-                    setIsLoading(false);
                 }
             };
-
+                
             // 格式化函數和其他輔助函數將在下一部分繼續...
             // 格式化函數
             const formatCurrency = (value) => {
