@@ -334,7 +334,7 @@
                                     />                                        
                                     <Input
                                         type="number"
-                                        value={targetStockRatio === '' ? '' : (100 - targetStockRatio)}
+                                        value={targetStockRatio === '' ? '' : Number((100 - targetStockRatio).toFixed(2))}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             if (value.includes('.') && value.split('.')[1].length > 2) {
