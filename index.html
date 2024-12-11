@@ -318,12 +318,13 @@
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
                                         type="number"
-                                        value={Number(targetStockRatio).toFixed(2)}
+                                        value={targetStockRatio}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             const numValue = Number(value);
                                             if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
-                                                setTargetStockRatio(Number(Number(value).toFixed(2)));
+                                                const formattedValue = value === '' ? '' : Number(value);
+                                                setTargetStockRatio(formattedValue);
                                             }
                                         }}
                                         placeholder="輸入股票比例 %"
@@ -331,12 +332,12 @@
                                     />                                        
                                     <Input
                                         type="number"
-                                        value={(100 - Number(targetStockRatio)).toFixed(2)}
+                                        value={targetStockRatio === '' ? '' : (100 - targetStockRatio)}
                                         onChange={(e) => {
                                             const value = e.target.value;
-                                            const numValue = Number(value);
                                             if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
-                                                setTargetStockRatio(Number((100 - Number(value)).toFixed(2)));
+                                                const formattedValue = value === '' ? '' : Number(value);
+                                                setTargetStockRatio(100 - formattedValue);
                                             }
                                         }}
                                         placeholder="輸入現金比例 %"
