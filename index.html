@@ -240,12 +240,8 @@
                     const queryCode = formattedCode.endsWith('TW') ? 
                         formattedCode : `${formattedCode}.TW`;
                         
-                    const response = await fetch(`https://tw.quote.finance.yahoo.net/quote/q?type=tick&perd=1m&mkt=10&sym=${queryCode}`, {
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                        }
-                    });
-                    
+                    const response = await fetch(`https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_${stockCode}.tw`);
+                        
                     if (!response.ok) {
                         throw new Error('無法獲取股票資訊');
                     }
