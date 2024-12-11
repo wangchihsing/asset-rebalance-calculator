@@ -318,11 +318,11 @@
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
                                         type="number"
-                                        value={targetStockRatio}
+                                        value={Number(targetStockRatio).toFixed(2)}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             const numValue = Number(value);
-                                            if (value === '' || (numValue >= 0 && numValue <= 100)) {
+                                            if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
                                                 setTargetStockRatio(Number(Number(value).toFixed(2)));
                                             }
                                         }}
@@ -331,11 +331,11 @@
                                     />                                        
                                     <Input
                                         type="number"
-                                        value={targetStockRatio === '' ? '' : (100 - Number(targetStockRatio))}
+                                        value={(100 - Number(targetStockRatio)).toFixed(2)}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             const numValue = Number(value);
-                                            if (value === '' || (numValue >= 0 && numValue <= 100)) {
+                                            if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
                                                 setTargetStockRatio(Number((100 - Number(value)).toFixed(2)));
                                             }
                                         }}
