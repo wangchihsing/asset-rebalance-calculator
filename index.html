@@ -214,16 +214,26 @@
             };
 
             const handleManualRatioInput = (value, isStock = true) => {
-                const numValue = value === '' ? 0 : Number(value);
-                
+                if (value === '') {
+                    if (isStock) {
+                        setTargetStockRatio('');
+                    } else {
+                        setTargetStockRatio(100);
+                    }
+                    return;
+                }
+
+                const numValue = Number(value);
                 if (numValue > 100) return;
-    
+
                 if (isStock) {
                     setTargetStockRatio(numValue);
                 } else {
                     setTargetStockRatio(100 - numValue);
                 }
             };
+               
+    
             
             const calculateRebalance = () => {
                 const totalStocks = Number(currentStocks);
@@ -308,7 +318,7 @@
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
                                         type="number"
-                                        value={formatPercentage(targetStockRatio) || ''}
+                                        value={targetStockRatio === '' ? '' : formatPercentage(targetStockRatio)}
                                         onChange={(e) => handleManualRatioInput(e.target.value, true)}
                                         placeholder="輸入股票比例 %"
                                         className="text-center"
@@ -318,7 +328,7 @@
                                     />                                        
                                     <Input
                                         type="number"
-                                        value={formatPercentage(100 - targetStockRatio) || ''}
+                                        value={targetStockRatio === '' ? '' : formatPercentage(100 - targetStockRatio)}
                                         onChange={(e) => handleManualRatioInput(e.target.value, false)}
                                         placeholder="輸入現金比例 %"
                                         className="text-center"
