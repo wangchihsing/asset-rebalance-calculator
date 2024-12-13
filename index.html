@@ -1,601 +1,684 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>整合型投資分析工具</title>
-    
+
     <!-- React 相關依賴 -->
-    <script src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"
+    ></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+
     <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+
     <style>
-        input[type="range"] {
-            height: 8px;
-            border-radius: 4px;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-            background: #ddd;
-            position: relative;
-        }
+      input[type="range"] {
+          height: 8px;
+          border-radius: 4px;
+          outline: none;
+          -webkit-appearance: none;
+          appearance: none;
+          background: #ddd;
+          position: relative;
+      }
 
-        input[type="range"]::-webkit-slider-runnable-track {
-            background: linear-gradient(to right, #3b82f6 var(--value), #ddd 0%);
-            height: 8px;
-            border-radius: 4px;
-        }
+      input[type="range"]::-webkit-slider-runnable-track {
+          background: linear-gradient(to right, #3b82f6 var(--value), #ddd 0%);
+          height: 8px;
+          border-radius: 4px;
+      }
 
-        input[type="range"]::-moz-range-track {
-            background: linear-gradient(to right, #3b82f6 var(--value), #ddd 0%);
-            height: 8px;
-            border-radius: 4px;
-        }
+      input[type="range"]::-moz-range-track {
+          background: linear-gradient(to right, #3b82f6 var(--value), #ddd 0%);
+          height: 8px;
+          border-radius: 4px;
+      }
 
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none !important;
-            appearance: none !important;
-            width: 20px;
-            height: 20px;
-            background: #3b82f6;
-            border-radius: 50%;
-            cursor: pointer;
-            margin-top: -6px !important;
-            transition: background .15s ease-in-out;
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.20);
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #3b82f6;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background .15s ease-in-out;
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.20);
-        }
-        
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: #2563eb;
-        }
-        
-        input[type="range"]::-moz-range-thumb:hover {
-            background: #2563eb;
-        }
+      input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none !important;
+          appearance: none !important;
+          width: 20px;
+          height: 20px;
+          background: #3b82f6;
+          border-radius: 50%;
+          cursor: pointer;
+          margin-top: -6px !important;
+          transition: background .15s ease-in-out;
+          border: 2px solid white;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.20);
+      }
 
-        .slider-container {
-            width: 100%;
-            padding: 0 20px;
-            margin: 20px 0;
-            min-width: 300px;
-        }
+      input[type="range"]::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          background: #3b82f6;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: background .15s ease-in-out;
+          border: 2px solid white;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.20);
+      }
+
+      input[type="range"]::-webkit-slider-thumb:hover {
+          background: #2563eb;
+      }
+
+      input[type="range"]::-moz-range-thumb:hover {
+          background: #2563eb;
+      }
+
+      .slider-container {
+          width: 100%;
+      padding: 0 10px;
+      margin: 20px 0;
+      min-width: auto;
+      max-width: 100%;
+      }
     </style>
-</head>
-<body class="bg-gray-100">
+  </head>
+  <body class="bg-gray-100">
     <div id="root"></div>
+    <script type="text/babel">
+                // 引入 React Hooks
+                const { useState, useEffect } = React;
+                    // 加入 Local Storage 自定義 Hook
+                const useLocalStorage = (key, initialValue) => {
+                    // 初始化狀態
+                    const [storedValue, setStoredValue] = useState(() => {
+                        try {
+                            // 嘗試從 localStorage 獲取數據
+                            const item = window.localStorage.getItem(key);
+                            return item ? JSON.parse(item) : initialValue;
+                        } catch (error) {
+                            console.error('從 LocalStorage 讀取失敗:', error);
+                            return initialValue;
+                        }
+                    });
 
-<script type="text/babel">
-    // 引入 React Hooks
-    const { useState } = React;
+                    // 監聽數據變化並保存到 localStorage
+                    useEffect(() => {
+                        try {
+                            window.localStorage.setItem(key, JSON.stringify(storedValue));
+                        } catch (error) {
+                            console.error('保存到 LocalStorage 失敗:', error);
+                        }
+                    }, [key, storedValue]);
 
-    // 基礎組件定義
-    const Card = ({ children, className = "" }) => (
-        <div className={`bg-white rounded-lg shadow-sm p-6 ${className}`}>{children}</div>
-    );
-    
-    const CardHeader = ({ children }) => (
-        <div className="mb-6">{children}</div>
-    );
-    
-    const CardTitle = ({ children, className }) => (
-        <h2 className={`text-xl font-bold ${className}`}>{children}</h2>
-    );
-    
-    const CardContent = ({ children, className }) => (
-        <div className={className}>{children}</div>
-    );
-    
-    const Input = React.forwardRef((props, ref) => (
-        <input {...props} ref={ref} className={`w-full p-2 border rounded-md ${props.className}`} />
-    ));
-    
-    const Alert = ({ children, className }) => (
-        <div className={`p-4 rounded-md ${className}`}>{children}</div>
-    );
-    
-    const AlertDescription = ({ children }) => (
-        <div className="text-sm">{children}</div>
-    );
-    
-    const Slider = ({ value, onValueChange, ...props }) => (
-        <div className="slider-container">
-            <input
-                type="range"
-                value={value[0]}
-                onChange={e => {
-                    const val = e.target.valueAsNumber;
-                    e.target.style.setProperty('--value', `${val}%`);
-                    onValueChange([val]);
-                }}
-                className="w-full max-w-full"
-                style={{
-                    '--value': `${value[0]}%`
-                }}
-                {...props}
-            />
-        </div>
-    );
+                    return [storedValue, setStoredValue];
+                };
 
-    // 圓餅圖組件
-    const PieChart = ({ data, colors, variant = 'solid' }) => {
-        const total = data.reduce((sum, item) => sum + item.value, 0);
-        
-        if (variant === 'donut') {
-            let startAngle = 0;
-            return (
-                <svg viewBox="-100 -100 200 200" style={{ transform: 'rotate(-90deg)' }}>
-                    {data.map((item, index) => {
-                        const angle = (item.value / total) * 360;
-                        const largeArcFlag = angle > 180 ? 1 : 0;
-                        const endAngle = startAngle + angle;
-                        
-                        const startRad = (startAngle * Math.PI) / 180;
-                        const endRad = (endAngle * Math.PI) / 180;
-                        
-                        const x1 = 60 * Math.cos(startRad);
-                        const y1 = 60 * Math.sin(startRad);
-                        const x2 = 60 * Math.cos(endRad);
-                        const y2 = 60 * Math.sin(endRad);
-                        
-                        const x1Inner = 30 * Math.cos(startRad);
-                        const y1Inner = 30 * Math.sin(startRad);
-                        const x2Inner = 30 * Math.cos(endRad);
-                        const y2Inner = 30 * Math.sin(endRad);
-                        
-                        const path = [
-                            `M ${x1} ${y1}`,
-                            `A 60 60 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-                            `L ${x2Inner} ${y2Inner}`,
-                            `A 30 30 0 ${largeArcFlag} 0 ${x1Inner} ${y1Inner}`,
-                            'Z'
-                        ].join(' ');
-                        
-                        startAngle += angle;
-                        return <path key={index} d={path} fill={colors[index]} stroke="white" strokeWidth="1" />;
-                    })}
-                </svg>
-            );
-        }
+                // 基礎組件定義
+                const Card = ({ children, className = "" }) => (
+                    <div className={`bg-white rounded-lg shadow-sm p-4 md:p-6 overflow-hidden ${className}`}>{children}</div>
+                );
 
-        let currentAngle = 0;
-        return (
-            <svg viewBox="-70 -70 140 140" style={{ transform: 'rotate(-90deg)' }}>
-                {data.map((item, index) => {
-                    const angle = (item.value / total) * 360;
-                    const x1 = Math.cos((currentAngle * Math.PI) / 180) * 60;
-                    const y1 = Math.sin((currentAngle * Math.PI) / 180) * 60;
-                    const x2 = Math.cos(((currentAngle + angle) * Math.PI) / 180) * 60;
-                    const y2 = Math.sin(((currentAngle + angle) * Math.PI) / 180) * 60;
-                    
-                    const largeArcFlag = angle > 180 ? 1 : 0;
-                    const path = `M ${x1} ${y1} A 60 60 0 ${largeArcFlag} 1 ${x2} ${y2} L 0 0 Z`;
-                    
-                    currentAngle += angle;
-                    return <path key={index} d={path} fill={colors[index]} />;
-                })}
-            </svg>
-        );
-    };
+                const CardHeader = ({ children }) => (
+                    <div className="mb-6">{children}</div>
+                );
 
-    // 在平衡計算器組件
-    const RebalanceCalculator = () => {
-        const [currentStocks, setCurrentStocks] = useState('');
-        const [currentCash, setCurrentCash] = useState('');
-        const [targetStockRatio, setTargetStockRatio] = useState(50.00);
+                const CardTitle = ({ children, className }) => (
+                    <h2 className={`text-xl font-bold ${className}`}>{children}</h2>
+                );
 
-        const COLORS = {
-            current: ['#3b82f6', '#93c5fd'],
-            target: ['#059669', '#86efac']
-        };
+                const CardContent = ({ children, className }) => (
+                    <div className={className}>{children}</div>
+                );
 
-        const formatCurrency = (value) => {
-            return new Intl.NumberFormat('zh-TW', {
-                style: 'decimal',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(value);
-        };
+                const Input = React.forwardRef((props, ref) => (
+                    <input {...props} ref={ref} className={`w-full p-2 border rounded-md ${props.className}`} />
+                ));
 
-        const formatPercentage = (value) => {
-            return Number(value).toFixed(2);
-        };
+                const Alert = ({ children, className }) => (
+                    <div className={`p-4 rounded-md ${className}`}>{children}</div>
+                );
 
-        const handleTargetRatioChange = (value) => {
-            setTargetStockRatio(Number(formatPercentage(value)));
-        };
+                const AlertDescription = ({ children }) => (
+                    <div className="text-sm">{children}</div>
+                );
 
-        const calculateRebalance = () => {
-            const totalStocks = Number(currentStocks);
-            const totalCash = Number(currentCash);
-            const totalAssets = totalStocks + totalCash;
-            
-            const currentStockRatio = (totalStocks / totalAssets) * 100;
-            const targetAmount = totalAssets * (targetStockRatio / 100);
-            const adjustment = targetAmount - totalStocks;
-            
-            return {
-                totalAssets,
-                currentStockRatio: Number(formatPercentage(currentStockRatio)),
-                adjustment,
-                targetCash: totalAssets - targetAmount,
-                targetStocks: targetAmount,
-                currentCashRatio: Number(formatPercentage(100 - currentStockRatio))
-            };
-        };
-
-        const results = currentStocks && currentCash ? calculateRebalance() : null;
-        const cashRatio = Number(formatPercentage(100 - targetStockRatio));
-
-        return (
-            <div className="w-full overflow-hidden">
-                <div className="flex flex-col gap-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Input
-                            type="number"
-                            value={currentStocks}
-                            onChange={(e) => setCurrentStocks(e.target.value)}
-                            placeholder="輸入股票現值"
+                const Slider = ({ value, onValueChange, ...props }) => (
+                    <div className="slider-container">
+                        <input
+                            type="range"
+                            value={value[0]}
+                            onChange={e => {
+                                const val = e.target.valueAsNumber;
+                                e.target.style.setProperty('--value', `${val}%`);
+                                onValueChange([val]);
+                            }}
                             className="w-full"
-                        />
-                        <Input
-                            type="number"
-                            value={currentCash}
-                            onChange={(e) => setCurrentCash(e.target.value)}
-                            placeholder="輸入現金金額"
-                            className="w-full"
+                            style={{
+                                width: '100%',
+                                minWidth: '300px',
+                                maxWidth: '600px',
+                                '--value': `${value[0]}%`
+                            }}
+                            {...props}
                         />
                     </div>
+                );
 
-                    <div className="pt-4">
-                        <label className="block text-sm font-medium mb-1">
-                            目標股票配置比例：{formatPercentage(targetStockRatio)}%
-                        </label>
-                        <Slider
-                            value={[targetStockRatio]}
-                            onValueChange={([value]) => handleTargetRatioChange(value)}
-                            min={0}
-                            max={100}
-                            step={0.01}
-                            className="w-full"
-                        />
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input
-                                type="number"
-                                value={targetStockRatio}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value.includes('.') && value.split('.')[1].length > 2) {
-                                        return;
-                                    }
-                                    if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
-                                        const formattedValue = value === '' ? '' : Number(value);
-                                        setTargetStockRatio(formattedValue);
-                                    }
-                                }}
-                                placeholder="輸入股票比例 %"
-                                className="text-center"
-                            />
-                            <Input
-                                type="number"
-                                value={targetStockRatio === '' ? '' : Number((100 - targetStockRatio).toFixed(2))}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value.includes('.') && value.split('.')[1].length > 2) {
-                                        return;
-                                    }
-                                    if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
-                                        const formattedValue = value === '' ? '' : Number(value);
-                                        setTargetStockRatio(100 - formattedValue);
-                                    }
-                                }}
-                                placeholder="輸入現金比例 %"
-                                className="text-center"
-                            />
-                        </div>
-                    </div>
+                // 圓餅圖組件
+                const PieChart = ({ data, colors, variant = 'solid' }) => {
+                    const total = data.reduce((sum, item) => sum + item.value, 0);
 
-                    {results && (
-                        <>
-                            <div className="grid grid-cols-2 lg:grid-cols-2 gap-8 mt-6">
-                                <div className="text-center">
-                                    <div className="font-medium mb-2">目前配置</div>
-                                    <div className="w-48 h-48 mx-auto">
-                                        <PieChart 
-                                            data={[
-                                                { value: results.currentStockRatio },
-                                                { value: results.currentCashRatio }
-                                            ]}
-                                            colors={COLORS.current}
-                                            variant="donut"
-                                        />
-                                    </div>
-                                    <div className="mt-2 space-y-1">
-                                        <div className="flex justify-center items-center gap-2">
-                                            <div className="w-3 h-3 bg-[#3b82f6]"></div>
-                                            <div className="text-sm">股票 {formatPercentage(results.currentStockRatio)}%</div>
-                                        </div>
-                                        <div className="flex justify-center items-center gap-2">
-                                            <div className="w-3 h-3 bg-[#93c5fd]"></div>
-                                            <div className="text-sm">現金 {formatPercentage(results.currentCashRatio)}%</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-sm text-gray-600 mt-2">
-                                        總資產：{formatCurrency(results.totalAssets)} 元
-                                    </div>
-                                </div>
+                    if (variant === 'donut') {
+                        let startAngle = 0;
+                        return (
+                            <svg viewBox="-100 -100 200 200" style={{ transform: 'rotate(-90deg)' }}>
+                                {data.map((item, index) => {
+                                    const angle = (item.value / total) * 360;
+                                    const largeArcFlag = angle > 180 ? 1 : 0;
+                                    const endAngle = startAngle + angle;
 
-                                <div className="text-center">
-                                    <div className="font-medium mb-2">目標配置</div>
-                                    <div className="w-48 h-48 mx-auto">
-                                        <PieChart 
-                                            data={[
-                                                { value: targetStockRatio },
-                                                { value: cashRatio }
-                                            ]}
-                                            colors={COLORS.target}
-                                            variant="donut"
-                                        />
-                                    </div>
-                                    <div className="mt-2 space-y-1">
-                                        <div className="flex justify-center items-center gap-2">
-                                            <div className="w-3 h-3 bg-[#059669]"></div>
-                                            <div className="text-sm">股票 {formatPercentage(targetStockRatio)}%</div>
-                                        </div>
-                                        <div className="flex justify-center items-center gap-2">
-                                            <div className="w-3 h-3 bg-[#86efac]"></div>
-                                            <div className="text-sm">現金 {formatPercentage(cashRatio)}%</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                    const startRad = (startAngle * Math.PI) / 180;
+                                    const endRad = (endAngle * Math.PI) / 180;
 
-                            <div className="space-y-4">
-                                <div className="font-medium">建議調整方案</div>
-                                {Math.abs(results.adjustment) > 1000 && (
-                                    <Alert className={results.adjustment > 0 ? "bg-green-50" : "bg-blue-50"}>
-                                        <AlertDescription className="flex items-center gap-2">
-                                            {results.adjustment > 0 ? (
-                                                <>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
-                                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                                                        <polyline points="17 6 23 6 23 12"/>
-                                                    </svg>
-                                                    建議買入股票：{formatCurrency(Math.abs(results.adjustment))} 元
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
-                                                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
-                                                        <polyline points="17 18 23 18 23 12"/>
-                                                    </svg>
-                                                    建議賣出股票：{formatCurrency(Math.abs(results.adjustment))} 元
-                                                </>
-                                            )}
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
+                                    const x1 = 60 * Math.cos(startRad);
+                                    const y1 = 60 * Math.sin(startRad);
+                                    const x2 = 60 * Math.cos(endRad);
+                                    const y2 = 60 * Math.sin(endRad);
 
-                                <div className="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded-lg">
-                                    <div>
-                                        <div className="text-gray-600">調整後股票金額</div>
-                                        <div className="font-medium">
-                                            {formatCurrency(results.targetStocks)} 元 
-                                            ({formatPercentage(targetStockRatio)}%)
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="text-gray-600">調整後現金金額</div>
-                                        <div className="font-medium">
-                                            {formatCurrency(results.targetCash)} 元 
-                                            ({formatPercentage(cashRatio)}%)
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </>
-                    )}
-                </div>
-            </div>
-        );
-    };
+                                    const x1Inner = 30 * Math.cos(startRad);
+                                    const y1Inner = 30 * Math.sin(startRad);
+                                    const x2Inner = 30 * Math.cos(endRad);
+                                    const y2Inner = 30 * Math.sin(endRad);
 
-    // 投資組合分析工具組件
-    const PortfolioAnalyzer = () => {
-        const [stocks, setStocks] = useState(() => [{
-            id: 1,
-            code: '',
-            amount: '',
-            color: '#3b82f6'
-        }]);
+                                    const path = [
+                                        `M ${x1} ${y1}`,
+                                        `A 60 60 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                                        `L ${x2Inner} ${y2Inner}`,
+                                        `A 30 30 0 ${largeArcFlag} 0 ${x1Inner} ${y1Inner}`,
+                                        'Z'
+                                    ].join(' ');
 
-        const colors = [
-            '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1',
-            '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#06b6d4'
-        ];
+                                    startAngle += angle;
+                                    return <path key={index} d={path} fill={colors[index]} stroke="white" strokeWidth="1" />;
+                                })}
+                            </svg>
+                        );
+                    }
 
-        const addStock = () => {
-            if (stocks.length < 10) {
-                setStocks(prevStocks => [...prevStocks, {
-                    id: Date.now(),
-                    code: '',
-                    amount: '',
-                    color: colors[prevStocks.length % colors.length]
-                }]);
-            }
-        };
+                    let currentAngle = 0;
+                    return (
+                        <svg viewBox="-70 -70 140 140" style={{ transform: 'rotate(-90deg)' }}>
+                            {data.map((item, index) => {
+                                const angle = (item.value / total) * 360;
+                                const x1 = Math.cos((currentAngle * Math.PI) / 180) * 60;
+                                const y1 = Math.sin((currentAngle * Math.PI) / 180) * 60;
+                                const x2 = Math.cos(((currentAngle + angle) * Math.PI) / 180) * 60;
+                                const y2 = Math.sin(((currentAngle + angle) * Math.PI) / 180) * 60;
 
-        const removeStock = (id) => {
-            if (stocks.length > 1) {
-                setStocks(prevStocks => prevStocks.filter(stock => stock.id !== id));
-            }
-        };
+                                const largeArcFlag = angle > 180 ? 1 : 0;
+                                const path = `M ${x1} ${y1} A 60 60 0 ${largeArcFlag} 1 ${x2} ${y2} L 0 0 Z`;
 
-        const updateStock = (id, field, value) => {
-            setStocks(prevStocks => prevStocks.map(stock => 
-                stock.id === id ? { ...stock, [field]: value } : stock
-            ));
-        };
+                                currentAngle += angle;
+                                return <path key={index} d={path} fill={colors[index]} />;
+                            })}
+                        </svg>
+                    );
+                };
+            // 在平衡計算器組件
+                const RebalanceCalculator = () => {
+                    // 修改後的程式碼
+                    const [currentStocks, setCurrentStocks] = useLocalStorage('rebalance_currentStocks', '');
+                    const [currentCash, setCurrentCash] = useLocalStorage('rebalance_currentCash', '');
+                    const [targetStockRatio, setTargetStockRatio] = useLocalStorage('rebalance_targetRatio', 50.00);
 
-        const calculateTotal = () => {
-            return stocks.reduce((sum, stock) => sum + (Number(stock.amount) || 0), 0);
-        };
+                    const COLORS = {
+                        current: ['#3b82f6', '#93c5fd'],
+                        target: ['#059669', '#86efac']
+                    };
 
-        const calculatePercentages = () => {
-            const total = calculateTotal();
-            return stocks.map(stock => ({
-                ...stock,
-                percentage: total ? ((Number(stock.amount) || 0) / total * 100) : 0
-            }));
-        };
+                    const formatCurrency = (value) => {
+                        return new Intl.NumberFormat('zh-TW', {
+                            style: 'decimal',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                        }).format(value);
+                    };
 
-        return (
-            <div className="w-full overflow-x-hidden">
-                <div className="flex flex-col gap-4">
-                    {stocks.map(stock => (
-                        <div key={stock.id} className="flex items-center gap-2 w-full">
-                            <div className="w-4 h-4 flex-shrink-0" style={{ backgroundColor: stock.color }}></div>
-                            <input
-                                type="text"
-                                value={stock.code}
-                                onChange={(e) => updateStock(stock.id, 'code', e.target.value)}
-                                placeholder="股票代碼"
-                                className="flex-1 p-2 border rounded min-w-0"
-                            />
-                            <input
-                                type="number"
-                                value={stock.amount}
-                                onChange={(e) => updateStock(stock.id, 'amount', e.target.value)}
-                                placeholder="金額"
-                                className="flex-1 p-2 border rounded min-w-0"
-                            />
-                            <button
-                                onClick={() => removeStock(stock.id)}
-                                className="p-2 text-gray-500 hover:text-red-500 flex-shrink-0"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M3 6h18"></path>
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    ))}
+                    const formatPercentage = (value) => {
+                        return Number(value).toFixed(2);
+                    };
 
-                    {stocks.length < 10 && (
-                        <button onClick={addStock} className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400">
-                            + 新增股票
-                        </button>
-                    )}
+                    const handleTargetRatioChange = (value) => {
+                        setTargetStockRatio(Number(formatPercentage(value)));
+                    };
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
-                        <div className="w-full">
-                            <h3 className="font-medium mb-4">投資組合分析</h3>
-                            <div className="space-y-2">
-                                {calculatePercentages()
-                                    .filter(stock => stock.amount && stock.percentage > 0)
-                                    .map(stock => (
-                                        <div key={stock.id} className="flex items-center gap-2">
-                                            <div className="w-3 h-3 flex-shrink-0" style={{ backgroundColor: stock.color }}></div>
-                                            <span className="flex-1 truncate">{stock.code || '未命名'}</span>
-                                            <span className="flex-shrink-0">{Number(stock.amount).toLocaleString()} 元</span>
-                                            <span className="w-16 text-right flex-shrink-0">{stock.percentage.toFixed(1)}%</span>
-                                        </div>
-                                    ))}
-                                <div className="border-t pt-2">
-                                    <div className="flex justify-between font-medium">
-                                        <span>總計</span>
-                                        <span>{calculateTotal().toLocaleString()} 元</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    const calculateRebalance = () => {
+                        const totalStocks = Number(currentStocks);
+                        const totalCash = Number(currentCash);
+                        const totalAssets = totalStocks + totalCash;
 
-                        <div className="w-full">
-                            <h3 className="font-medium mb-4">比例圖表</h3>
-                            <div className="aspect-square w-full max-w-[250px] mx-auto">
-                                <PieChart 
-                                    data={calculatePercentages()
-                                        .filter(stock => stock.amount && stock.percentage > 0)
-                                        .map(stock => ({ value: stock.percentage }))}
-                                    colors={stocks
-                                        .filter(stock => stock.amount && Number(stock.amount) > 0)
-                                        .map(stock => stock.color)}
+                        const currentStockRatio = (totalStocks / totalAssets) * 100;
+                        const targetAmount = totalAssets * (targetStockRatio / 100);
+                        const adjustment = targetAmount - totalStocks;
+
+                        return {
+                            totalAssets,
+                            currentStockRatio: Number(formatPercentage(currentStockRatio)),
+                            adjustment,
+                            targetCash: totalAssets - targetAmount,
+                            targetStocks: targetAmount,
+                            currentCashRatio: Number(formatPercentage(100 - currentStockRatio))
+                        };
+                    };
+
+                    const results = currentStocks && currentCash ? calculateRebalance() : null;
+                    const cashRatio = Number(formatPercentage(100 - targetStockRatio));
+
+                    return (
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <Input
+                                    type="number"
+                                    value={currentStocks}
+                                    onChange={(e) => setCurrentStocks(e.target.value)}
+                                    placeholder="輸入股票現值"
+                                    className="text-center"
+                                />
+                                <Input
+                                    type="number"
+                                    value={currentCash}
+                                    onChange={(e) => setCurrentCash(e.target.value)}
+                                    placeholder="輸入現金金額"
+                                    className="text-center"
                                 />
                             </div>
+
+                            <div className="pt-4">
+                                <label className="block text-sm font-medium mb-1">
+                                    目標股票配置比例：{formatPercentage(targetStockRatio)}%
+                                </label>
+                                <Slider
+                                    value={[targetStockRatio]}
+                                    onValueChange={([value]) => handleTargetRatioChange(value)}
+                                    min={0}
+                                    max={100}
+                                    step={0.01}
+                                    className="w-full"
+                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Input
+                                        type="number"
+                                        value={targetStockRatio}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value.includes('.') && value.split('.')[1].length > 2) {
+                                                return;
+                                            }
+                                            if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                                                const formattedValue = value === '' ? '' : Number(value);
+                                                setTargetStockRatio(formattedValue);
+                                            }
+                                        }}
+                                        placeholder="輸入股票比例 %"
+                                        className="text-center"
+                                    />
+                                    <Input
+                                        type="number"
+                                        value={targetStockRatio === '' ? '' : Number((100 - targetStockRatio).toFixed(2))}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value.includes('.') && value.split('.')[1].length > 2) {
+                                                return;
+                                            }
+                                            if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                                                const formattedValue = value === '' ? '' : Number(value);
+                                                setTargetStockRatio(100 - formattedValue);
+                                            }
+                                        }}
+                                        placeholder="輸入現金比例 %"
+                                        className="text-center"
+                                    />
+                                </div>
+                            </div>
+
+                            {results && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-8 mt-6">
+                                        {/* 這裡我會在下一部分繼續提供結果顯示的部分 */}
+                                    <div className="text-center">
+                                            <div className="font-medium mb-2">目前配置</div>
+                                            <div className="w-48 h-48 mx-auto">
+                                                <PieChart
+                                                    data={[
+                                                        { value: results.currentStockRatio },
+                                                        { value: results.currentCashRatio }
+                                                    ]}
+                                                    colors={COLORS.current}
+                                                    variant="donut"
+                                                />
+                                            </div>
+                                            <div className="mt-2 space-y-1">
+                                                <div className="flex justify-center items-center gap-2">
+                                                    <div className="w-3 h-3 bg-[#3b82f6]"></div>
+                                                    <div className="text-sm">股票 {formatPercentage(results.currentStockRatio)}%</div>
+                                                </div>
+                                                <div className="flex justify-center items-center gap-2">
+                                                    <div className="w-3 h-3 bg-[#93c5fd]"></div>
+                                                    <div className="text-sm">現金 {formatPercentage(results.currentCashRatio)}%</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-sm text-gray-600 mt-2">
+                                                總資產：{formatCurrency(results.totalAssets)} 元
+                                            </div>
+                                        </div>
+
+                                        <div className="text-center">
+                                            <div className="font-medium mb-2">目標配置</div>
+                                            <div className="w-48 h-48 mx-auto">
+                                                <PieChart
+                                                    data={[
+                                                        { value: targetStockRatio },
+                                                        { value: cashRatio }
+                                                    ]}
+                                                    colors={COLORS.target}
+                                                    variant="donut"
+                                                />
+                                            </div>
+                                            <div className="mt-2 space-y-1">
+                                                <div className="flex justify-center items-center gap-2">
+                                                    <div className="w-3 h-3 bg-[#059669]"></div>
+                                                    <div className="text-sm">股票 {formatPercentage(targetStockRatio)}%</div>
+                                                </div>
+                                                <div className="flex justify-center items-center gap-2">
+                                                    <div className="w-3 h-3 bg-[#86efac]"></div>
+                                                    <div className="text-sm">現金 {formatPercentage(cashRatio)}%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="font-medium">建議調整方案</div>
+                                        {Math.abs(results.adjustment) > 1000 && (
+                                            <Alert className={results.adjustment > 0 ? "bg-green-50" : "bg-blue-50"}>
+                                                <AlertDescription className="flex items-center gap-2">
+                                                    {results.adjustment > 0 ? (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                                                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                                                <polyline points="17 6 23 6 23 12"/>
+                                                            </svg>
+                                                            建議買入股票：{formatCurrency(Math.abs(results.adjustment))} 元
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                                                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+                                                                <polyline points="17 18 23 18 23 12"/>
+                                                            </svg>
+                                                            建議賣出股票：{formatCurrency(Math.abs(results.adjustment))} 元
+                                                        </>
+                                                    )}
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
+
+                                        <div className="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded-lg">
+                                            <div>
+                                                <div className="text-gray-600">調整後股票金額</div>
+                                                <div className="font-medium">
+                                                    {formatCurrency(results.targetStocks)} 元
+                                                    ({formatPercentage(targetStockRatio)}%)
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-gray-600">調整後現金金額</div>
+                                                <div className="font-medium">
+                                                    {formatCurrency(results.targetCash)} 元
+                                                    ({formatPercentage(cashRatio)}%)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
+                    );
+                };
+                // 投資組合分析工具組件
+                const PortfolioAnalyzer = () => {
+                    const [stocks, setStocks] = useLocalStorage('portfolio_stocks', [
+                        { id: 1, code: '', amount: '', color: '#3b82f6' }
+                    ]);
+                    // 新增排序方向狀態
+                    const [sortDirection, setSortDirection] = useLocalStorage('portfolio_sortDirection', 'desc');
+                    const colors = [
+                        '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1',
+                    '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#06b6d4'
+                    ];
+
+                    const addStock = () => {
+                        if (stocks.length < 10) {
+                            setStocks([
+                                ...stocks,
+                                {
+                                    id: Date.now(),
+                                    code: '',
+                                    amount: '',
+                                    color: colors[stocks.length % colors.length]
+                                }
+                            ]);
+                        }
+                    };
+
+                    const removeStock = (id) => {
+                        if (stocks.length > 1) {
+                            setStocks(stocks.filter(stock => stock.id !== id));
+                        }
+                    };
+
+                    const updateStock = (id, field, value) => {
+                        setStocks(stocks.map(stock =>
+                            stock.id === id ? { ...stock, [field]: value } : stock
+                        ));
+                    };
+
+                    const calculateTotal = () => {
+                        return stocks.reduce((sum, stock) => sum + (Number(stock.amount) || 0), 0);
+                    };
+
+                    const calculatePercentages = () => {
+                        const total = calculateTotal();
+                        const percentages = stocks.map(stock => ({
+                            ...stock,
+                            percentage: total ? ((Number(stock.amount) || 0) / total * 100) : 0
+                        }));
+                        
+                        return percentages
+                            .filter(stock => stock.amount && stock.percentage > 0)
+                            .sort((a, b) => sortDirection === 'desc' 
+                                ? b.percentage - a.percentage 
+                                : a.percentage - b.percentage);
+                    };
+
+                    return (
+                        <div className="flex flex-col space-y-4 w-full overflow-hidden">
+                            {/* 股票輸入區域 */}
+                            {stocks.map(stock => (
+                                <div key={stock.id} className="flex flex-nowrap gap-2 items-center overflow-hidden">
+                                    <div className="w-4 h-4 flex-shrink-0" style={{ backgroundColor: stock.color }}></div>
+                                    <input
+                                        type="text"
+                                        value={stock.code}
+                                        onChange={(e) => updateStock(stock.id, 'code', e.target.value)}
+                                        placeholder="股票代碼"
+                                        className="flex-1 p-2 border rounded text-center text-sm md:text-base min-w-0"
+                                    />
+                                    <input
+                                        type="number"
+                                        value={stock.amount}
+                                        onChange={(e) => updateStock(stock.id, 'amount', e.target.value)}
+                                        placeholder="金額"
+                                        className="flex-1 p-2 border rounded text-center text-sm md:text-base min-w-0"
+                                    />
+                                    <button
+                                        onClick={() => removeStock(stock.id)}
+                                        className="p-2 text-gray-500 hover:text-red-500 flex-shrink-0"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M3 6h18"></path>
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            ))}
+
+                            {/* 新增股票按鈕 */}
+                            {stocks.length < 10 && (
+                                <button
+                                    onClick={addStock}
+                                    className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 text-gray-500 hover:text-gray-600 text-sm md:text-base"
+                                >
+                                    + 新增股票
+                                </button>
+                            )}
+
+                            {/* 分析結果顯示 */}
+                            {stocks.some(stock => stock.amount && Number(stock.amount) > 0) && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="order-2 md:order-1">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <div className="font-medium">投資組合分析</div>
+                                            <button
+                                                onClick={() => setSortDirection(prev => prev === 'desc' ? 'asc' : 'desc')}
+                                                className="flex items-center gap-1 px-2 py-1 text-sm text-gray-600 hover:text-gray-900 border rounded-md hover:bg-gray-50"
+                                            >
+                                                <span>{sortDirection === 'desc' ? '由大到小' : '由小到大'}</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    {sortDirection === 'desc' ? (
+                                                        <path d="M6 9l6 6 6-6"/>
+                                                    ) : (
+                                                        <path d="M6 15l6-6 6 6"/>
+                                                    )}
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {calculatePercentages()
+                                                .filter(stock => stock.amount && stock.percentage > 0)
+                                                .map(stock => (
+                                                    <div key={stock.id} className="flex items-center gap-2 text-sm md:text-base">
+                                                        <div className="w-3 h-3 flex-shrink-0" style={{ backgroundColor: stock.color }}></div>
+                                                        <div className="flex-1 min-w-[80px]">
+                                                            {stock.code || '未命名'}
+                                                        </div>
+                                                        <div className="text-right whitespace-nowrap min-w-[100px]">
+                                                            {Number(stock.amount).toLocaleString()} 元
+                                                        </div>
+                                                        <div className="w-16 text-right">
+                                                            {stock.percentage.toFixed(1)}%
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            <div className="border-t pt-2">
+                                                <div className="flex justify-between font-medium">
+                                                    <div>總計</div>
+                                                    <div className="text-right min-w-[100px]">
+                                                        {calculateTotal().toLocaleString()} 元
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="order-1 md:order-2 flex flex-col items-center">
+                                        <div className="font-medium mb-2">比例圖表</div>
+                                        <div className="w-48 h-48">
+                                            <PieChart
+                                                data={calculatePercentages()
+                                                    .filter(stock => stock.amount && stock.percentage > 0)
+                                                    .map(stock => ({ value: stock.percentage }))}
+                                                colors={stocks
+                                                    .filter(stock => stock.amount && Number(stock.amount) > 0)
+                                                    .map(stock => stock.color)}
+                                                variant="donut"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </div>
-            </div>
-        );
-    };
+                );
+            };
+                    // 主應用程式組件
+                            const InvestmentAnalyzer = () => {
+                                return (
+                                    <div className="max-w-full mx-auto my-8 px-4 container">
+                                        <h1 className="text-2xl font-bold mb-8 text-center">整合型投資分析工具</h1>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-min">
+                                        {/* 在平衡計算工具 */}
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle className="flex items-center gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                                        <line x1="8" y1="21" x2="16" y2="21"/>
+                                                        <line x1="12" y1="17" x2="12" y2="21"/>
+                                                    </svg>
+                                                    在平衡計算
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <RebalanceCalculator />
+                                            </CardContent>
+                                        </Card>
+                                        {/* 投資組合分析工具 */}
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle className="flex items-center gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M3 3v18h18"/>
+                                                        <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                                                    </svg>
+                                                    投資組合分析
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <PortfolioAnalyzer />
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                </div>
+                            );
+                        };
 
-    // 主應用程式組件
-    const InvestmentAnalyzer = () => {
-        return (
-            <div className="container mx-auto p-4 min-h-screen">
-                <h1 className="text-xl sm:text-2xl font-bold mb-4 text-center">整合型投資分析工具</h1>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                                    <line x1="8" y1="21" x2="16" y2="21"/>
-                                    <line x1="12" y1="17" x2="12" y2="21"/>
-                                </svg>
-                                在平衡計算
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <RebalanceCalculator />
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M3 3v18h18"/>
-                                    <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
-                                </svg>
-                                投資組合分析
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <PortfolioAnalyzer />
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        );
-    };
-
-    // 應用程式渲染
-    document.addEventListener('DOMContentLoaded', () => {
-        const container = document.getElementById('root');
-        const root = ReactDOM.createRoot(container);
-        root.render(
-            <React.StrictMode>
-                <InvestmentAnalyzer />
-            </React.StrictMode>
-        );
-    });
-</script>
-</body>
+                // 應用程式渲染
+                const container = document.getElementById('root');
+                const root = ReactDOM.createRoot(container);
+                root.render(
+                    <React.StrictMode>
+                        <InvestmentAnalyzer />
+                    </React.StrictMode>
+                );
+                document.addEventListener('DOMContentLoaded', () => {
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(<InvestmentAnalyzer />);
+            });
+            window.addEventListener('load', () => {
+                try {
+                    const root = ReactDOM.createRoot(document.getElementById('root'));
+                    root.render(<InvestmentAnalyzer />);
+                } catch (error) {
+                    console.error('渲染錯誤:', error);
+                    document.getElementById('root').innerHTML = '載入發生錯誤，請查看控制台';
+                }
+            });
+    </script>
+  </body>
 </html>
