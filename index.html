@@ -636,6 +636,15 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<InvestmentAnalyzer />);
     });
+    window.addEventListener('load', () => {
+        try {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<InvestmentAnalyzer />);
+        } catch (error) {
+            console.error('渲染錯誤:', error);
+            document.getElementById('root').innerHTML = '載入發生錯誤，請查看控制台';
+        }
+    });
     </script>
 </body>
 </html>
