@@ -117,7 +117,7 @@
 <body class="bg-gray-100">
     <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
+    <script type="text/babel" data-presets="react">
         // 基礎組件
         const Card = ({ children, className = "" }) => (
             <div className={`bg-white rounded-lg shadow-sm p-6 ${className}`}>{children}</div>
@@ -632,8 +632,10 @@
         };
 
         // 渲染應用程式
+    document.addEventListener('DOMContentLoaded', () => {
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<InvestmentAnalyzer />);
+    });
     </script>
 </body>
 </html>
