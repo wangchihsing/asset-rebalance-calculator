@@ -91,44 +91,62 @@
             border-radius: 0.375rem;
             margin: 1rem 0;
         }
+
+        .tab-button {
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .tab-button:not(.active) {
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .tab-button:not(.active):hover {
+            background-color: #e5e7eb;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
     <div id="root"></div>
 
     <script type="text/babel">
-        // 這裡將放置 React 組件代碼
-        // 將在下一部分繼續
-        <script type="text/babel">
-        // 基礎組件定義
+        // 基礎組件
         const Card = ({ children, className = "" }) => (
             <div className={`bg-white rounded-lg shadow-sm p-6 ${className}`}>{children}</div>
         );
-
+        
         const CardHeader = ({ children }) => (
             <div className="mb-6">{children}</div>
         );
-
+        
         const CardTitle = ({ children, className }) => (
             <h2 className={`text-xl font-bold ${className}`}>{children}</h2>
         );
-
+        
         const CardContent = ({ children, className }) => (
             <div className={className}>{children}</div>
         );
-
+        
         const Input = React.forwardRef((props, ref) => (
             <input {...props} ref={ref} className={`w-full p-2 border rounded-md ${props.className}`} />
         ));
-
+        
         const Alert = ({ children, className }) => (
             <div className={`p-4 rounded-md ${className}`}>{children}</div>
         );
-
+        
         const AlertDescription = ({ children }) => (
             <div className="text-sm">{children}</div>
         );
-
+        
         const Slider = ({ value, onValueChange, ...props }) => (
             <div className="slider-container">
                 <input
@@ -154,21 +172,55 @@
         const TabButton = ({ active, onClick, children }) => (
             <button
                 onClick={onClick}
-                className={`px-4 py-2 font-medium rounded-lg ${
-                    active 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`tab-button ${active ? 'active' : ''}`}
             >
                 {children}
             </button>
         );
 
-        // 圓餅圖組件
-        const PieChart = ({ data, colors, totalValue = null }) => {
-            const total = totalValue ?? data.reduce((sum, item) => sum + item.value, 0);
-            let currentAngle = 0;
+        // 通用圓餅圖組件
+        const PieChart = ({ data, colors, variant = 'solid' }) => {
+            const total = data.reduce((sum, item) => sum + item.value, 0);
             
+            if (variant === 'donut') {
+                let startAngle = 0;
+                return (
+                    <svg viewBox="-100 -100 200 200" style={{ transform: 'rotate(-90deg)' }}>
+                        {data.map((item, index) => {
+                            const angle = (item.value / total) * 360;
+                            const largeArcFlag = angle > 180 ? 1 : 0;
+                            const endAngle = startAngle + angle;
+                            
+                            const startRad = (startAngle * Math.PI) / 180;
+                            const endRad = (endAngle * Math.PI) / 180;
+                            
+                            const x1 = 60 * Math.cos(startRad);
+                            const y1 = 60 * Math.sin(startRad);
+                            const x2 = 60 * Math.cos(endRad);
+                            const y2 = 60 * Math.sin(endRad);
+                            
+                            const x1Inner = 30 * Math.cos(startRad);
+                            const y1Inner = 30 * Math.sin(startRad);
+                            const x2Inner = 30 * Math.cos(endRad);
+                            const y2Inner = 30 * Math.sin(endRad);
+                            
+                            const path = [
+                                `M ${x1} ${y1}`,
+                                `A 60 60 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                                `L ${x2Inner} ${y2Inner}`,
+                                `A 30 30 0 ${largeArcFlag} 0 ${x1Inner} ${y1Inner}`,
+                                'Z'
+                            ].join(' ');
+                            
+                            startAngle += angle;
+                            return <path key={index} d={path} fill={colors[index]} stroke="white" strokeWidth="1" />;
+                        })}
+                    </svg>
+                );
+            }
+
+            // 實心圓餅圖
+            let currentAngle = 0;
             return (
                 <svg viewBox="-70 -70 140 140" style={{ transform: 'rotate(-90deg)' }}>
                     {data.map((item, index) => {
@@ -188,8 +240,8 @@
             );
         };
 
-        // 在下一部分繼續主要的 InvestmentAnalyzer 組件
-            const InvestmentAnalyzer = () => {
+        // 主應用程式組件
+        const InvestmentAnalyzer = () => {
             const [activeTab, setActiveTab] = React.useState('rebalance');
             const [currentStocks, setCurrentStocks] = React.useState('');
             const [currentCash, setCurrentCash] = React.useState('');
@@ -198,7 +250,6 @@
                 { id: 1, code: '', amount: '', color: '#3b82f6' }
             ]);
 
-            // 顏色配置
             const colors = [
                 '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1',
                 '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#06b6d4'
@@ -241,7 +292,7 @@
                 };
             };
 
-            // 投資組合分析相關函數
+            // 投資組合相關函數
             const addStock = () => {
                 if (portfolioStocks.length < 10) {
                     setPortfolioStocks([
@@ -280,15 +331,18 @@
                 }));
             };
 
-            // 計算結果
             const results = currentStocks && currentCash ? calculateRebalance() : null;
             const cashRatio = Number(formatPercentage(100 - targetStockRatio));
 
-            // 將在下一部分繼續渲染邏輯
-                    return (
+            return (
                 <Card className="max-w-4xl mx-auto my-8">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                            </svg>
                             投資分析工具
                         </CardTitle>
                         <div className="flex gap-2">
@@ -307,7 +361,7 @@
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {activeTab === 'rebalance' && (
+                       {activeTab === 'rebalance' && (
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
@@ -338,13 +392,39 @@
                                         step={0.01}
                                         className="w-full"
                                     />
-                                    <div className="grid grid-cols-2 gap-4 mt-2">
-                                        <div className="text-center text-sm text-gray-600">
-                                            股票 {formatPercentage(targetStockRatio)}%
-                                        </div>
-                                        <div className="text-center text-sm text-gray-600">
-                                            現金 {formatPercentage(100 - targetStockRatio)}%
-                                        </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Input
+                                            type="number"
+                                            value={targetStockRatio}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                if (value.includes('.') && value.split('.')[1].length > 2) {
+                                                    return;
+                                                }
+                                                if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                                                    const formattedValue = value === '' ? '' : Number(value);
+                                                    setTargetStockRatio(formattedValue);
+                                                }
+                                            }}
+                                            placeholder="輸入股票比例 %"
+                                            className="text-center"
+                                        />
+                                        <Input
+                                            type="number"
+                                            value={targetStockRatio === '' ? '' : Number((100 - targetStockRatio).toFixed(2))}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                if (value.includes('.') && value.split('.')[1].length > 2) {
+                                                    return;
+                                                }
+                                                if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
+                                                    const formattedValue = value === '' ? '' : Number(value);
+                                                    setTargetStockRatio(100 - formattedValue);
+                                                }
+                                            }}
+                                            placeholder="輸入現金比例 %"
+                                            className="text-center"
+                                        />
                                     </div>
                                 </div>
 
@@ -358,9 +438,9 @@
                                                         data={[
                                                             { value: results.currentStockRatio },
                                                             { value: results.currentCashRatio }
-                                                        ]} 
+                                                        ]}
                                                         colors={['#3b82f6', '#93c5fd']}
-                                                        totalValue={100}
+                                                        variant="donut"
                                                     />
                                                 </div>
                                                 <div className="mt-2 space-y-1">
@@ -377,6 +457,9 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div className="text-sm text-gray-600 mt-2">
+                                                    總資產：{formatCurrency(results.totalAssets)} 元
+                                                </div>
                                             </div>
 
                                             <div className="text-center">
@@ -386,9 +469,9 @@
                                                         data={[
                                                             { value: targetStockRatio },
                                                             { value: cashRatio }
-                                                        ]} 
+                                                        ]}
                                                         colors={['#059669', '#86efac']}
-                                                        totalValue={100}
+                                                        variant="donut"
                                                     />
                                                 </div>
                                                 <div className="mt-2 space-y-1">
@@ -433,13 +516,30 @@
                                                     </AlertDescription>
                                                 </Alert>
                                             )}
+
+                                            <div className="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded-lg">
+                                                <div>
+                                                    <div className="text-gray-600">調整後股票金額</div>
+                                                    <div className="font-medium">
+                                                        {formatCurrency(results.targetStocks)} 元 
+                                                        ({formatPercentage(targetStockRatio)}%)
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-gray-600">調整後現金金額</div>
+                                                    <div className="font-medium">
+                                                        {formatCurrency(results.targetCash)} 元 
+                                                        ({formatPercentage(cashRatio)}%)
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </>
                                 )}
                             </div>
                         )}
 
-                        {/* 將在下一部分繼續投資組合分析的渲染邏輯 */}
+                        {/* 將在下一部分繼續 */}
                         {activeTab === 'portfolio' && (
                             <div className="space-y-6">
                                 {portfolioStocks.map(stock => (
@@ -516,9 +616,10 @@
                                             <PieChart 
                                                 data={calculatePercentages()
                                                     .filter(stock => stock.amount && stock.percentage > 0)
-                                                    .map(stock => ({ value: stock.percentage }))} 
-                                                colors={portfolioStocks.map(stock => stock.color)}
-                                                totalValue={100}
+                                                    .map(stock => ({ value: stock.percentage }))}
+                                                colors={portfolioStocks
+                                                    .filter(stock => stock.amount && Number(stock.amount) > 0)
+                                                    .map(stock => stock.color)}
                                             />
                                         </div>
                                     </div>
