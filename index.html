@@ -412,10 +412,14 @@
         );
     };
     // 投資組合分析工具組件
+                
     const PortfolioAnalyzer = () => {
-        const [stocks, setStocks] = useState([
-            { id: 1, code: '', amount: '', color: '#3b82f6' }
-        ]);
+        const [stocks, setStocks] = useState(() => [{
+            id: 1,
+            code: '',
+            amount: '',
+            color: '#3b82f6'
+        }]);
 
         const colors = [
             '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1',
@@ -424,43 +428,39 @@
 
         const addStock = () => {
             if (stocks.length < 10) {
-                    setStocks([
-                        ...stocks,
-                        {
-                            id: Date.now(),
-                            code: '',
-                            amount: '',
-                            color: colors[stocks.length % colors.length]
-                        }
-                    ]);
-                }
-            };
+                setStocks(prevStocks => [...prevStocks, {
+                    id: Date.now(),
+                    code: '',
+                    amount: '',
+                    color: colors[prevStocks.length % colors.length]
+                }]);
+            }
+        };
+        const removeStock = (id) => {
+            if (stocks.length > 1) {
+                setStocks(prevStocks => prevStocks.filter(stock => stock.id !== id));
+            }    
+        };
 
-            const removeStock = (id) => {
-                if (stocks.length > 1) {
-                    setStocks(stocks.filter(stock => stock.id !== id));
-                }
-            };
+        const updateStock = (id, field, value) => {
+            setStocks(prevStocks => prevStocks.map(stock => 
+                stock.id === id ? { ...stock, [field]: value } : stock
+            ));
+        };
 
-            const updateStock = (id, field, value) => {
-                setStocks(stocks.map(stock => 
-                    stock.id === id ? { ...stock, [field]: value } : stock
-                ));
-            };
+        const calculateTotal = () => {
+            return stocks.reduce((sum, stock) => sum + (Number(stock.amount) || 0), 0);
+        };
 
-            const calculateTotal = () => {
-                return stocks.reduce((sum, stock) => sum + (Number(stock.amount) || 0), 0);
-            };
+        const calculatePercentages = () => {
+            const total = calculateTotal();
+            return stocks.map(stock => ({
+                ...stock,
+                percentage: total ? ((Number(stock.amount) || 0) / total * 100) : 0
+            }));
+        };
 
-            const calculatePercentages = () => {
-                const total = calculateTotal();
-                return stocks.map(stock => ({
-                    ...stock,
-                    percentage: total ? ((Number(stock.amount) || 0) / total * 100) : 0
-                }));
-            };
-
-            return (
+        return (
             <div className="w-full overflow-x-hidden">
                 <div className="flex flex-col gap-4">
                     {stocks.map(stock => (
