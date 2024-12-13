@@ -424,46 +424,45 @@
 
         const addStock = () => {
             if (stocks.length < 10) {
-                setStocks([
-                    ...stocks,
-                    {
-                        id: Date.now(),
-                        code: '',
-                        amount: '',
-                        color: colors[stocks.length % colors.length]
-                    }
-                ]);
-            }
-        };
+                    setStocks([
+                        ...stocks,
+                        {
+                            id: Date.now(),
+                            code: '',
+                            amount: '',
+                            color: colors[stocks.length % colors.length]
+                        }
+                    ]);
+                }
+            };
 
-        const removeStock = (id) => {
-            if (stocks.length > 1) {
-                setStocks(stocks.filter(stock => stock.id !== id));
-            }
-        };
+            const removeStock = (id) => {
+                if (stocks.length > 1) {
+                    setStocks(stocks.filter(stock => stock.id !== id));
+                }
+            };
 
-        const updateStock = (id, field, value) => {
-            setStocks(stocks.map(stock => 
-                stock.id === id ? { ...stock, [field]: value } : stock
-            ));
-        };
+            const updateStock = (id, field, value) => {
+                setStocks(stocks.map(stock => 
+                    stock.id === id ? { ...stock, [field]: value } : stock
+                ));
+            };
 
-        const calculateTotal = () => {
-            return stocks.reduce((sum, stock) => sum + (Number(stock.amount) || 0), 0);
-        };
+            const calculateTotal = () => {
+                return stocks.reduce((sum, stock) => sum + (Number(stock.amount) || 0), 0);
+            };
 
-        const calculatePercentages = () => {
-            const total = calculateTotal();
-            return stocks.map(stock => ({
-                ...stock,
-                percentage: total ? ((Number(stock.amount) || 0) / total * 100) : 0
-            }));
-        };
+            const calculatePercentages = () => {
+                const total = calculateTotal();
+                return stocks.map(stock => ({
+                    ...stock,
+                    percentage: total ? ((Number(stock.amount) || 0) / total * 100) : 0
+                }));
+            };
 
-        return (
-            <div className="w-full overflow-hidden">
-                {/* 股票輸入區域 */}
-                <div className="flex flex-col gap-4 mb-4">
+            return (
+            <div className="w-full overflow-x-hidden">
+                <div className="flex flex-col gap-4">
                     {stocks.map(stock => (
                         <div key={stock.id} className="flex items-center gap-2 w-full">
                             <div className="w-4 h-4 flex-shrink-0" style={{ backgroundColor: stock.color }}></div>
@@ -485,60 +484,56 @@
                                 onClick={() => removeStock(stock.id)}
                                 className="p-2 text-gray-500 hover:text-red-500 flex-shrink-0"
                             >
-                                <svg className="w-5 h-5" /* SVG 內容 */ />
-                                {/* ... SVG 圖示保持不變 ... */}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M3 6h18"></path>
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                </svg>
                             </button>
                         </div>
                     ))}
-                </div>
 
-                {/* 新增股票按鈕 */}
-                {stocks.length < 10 && (
-                    <button
-                        onClick={addStock}
-                        className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 text-gray-500 hover:text-gray-600"
-                    >
-                        + 新增股票
-                    </button>
-                )}
+                    {stocks.length < 10 && (
+                        <button onClick={addStock} className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg">
+                            + 新增股票
+                        </button>
+                    )}
 
-                {/* 分析區域 */}
-                <div className="flex flex-col lg:flex-row gap-4">
-                    {/* 投資組合分析 */}
-                    <div className="w-full lg:w-1/2">
-                        <div className="font-medium mb-4">投資組合分析</div>
-                        <div className="space-y-2 overflow-x-auto">
-                            {calculatePercentages()
-                                .filter(stock => stock.amount && stock.percentage > 0)
-                                .map(stock => (
-                                    <div key={stock.id} className="flex items-center gap-2 min-w-0">
-                                         <div className="w-3 h-3 flex-shrink-0" style={{ backgroundColor: stock.color }}></div>
-                                         <span className="flex-1 truncate">{stock.code || '未命名'}</span>
-                                         <span className="flex-shrink-0">{Number(stock.amount).toLocaleString()} 元</span>
-                                         <span className="w-16 text-right flex-shrink-0">{stock.percentage.toFixed(1)}%</span>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
+                        <div className="w-full">
+                            <h3 className="font-medium mb-4">投資組合分析</h3>
+                            <div className="space-y-2">
+                                {calculatePercentages()
+                                    .filter(stock => stock.amount && stock.percentage > 0)
+                                    .map(stock => (
+                                        <div key={stock.id} className="flex items-center gap-2">
+                                            <div className="w-3 h-3 flex-shrink-0" style={{ backgroundColor: stock.color }}></div>
+                                            <span className="flex-1 truncate">{stock.code || '未命名'}</span>
+                                            <span className="flex-shrink-0">{Number(stock.amount).toLocaleString()} 元</span>
+                                            <span className="w-16 text-right flex-shrink-0">{stock.percentage.toFixed(1)}%</span>
+                                        </div>
+                                    ))}
+                                <div className="border-t pt-2">
+                                    <div className="flex justify-between font-medium">
+                                        <span>總計</span>
+                                        <span>{calculateTotal().toLocaleString()} 元</span>
                                     </div>
-                                ))}
-                            <div className="border-t pt-2 mt-2">
-                                <div className="flex justify-between">
-                                    <div>總計</div>
-                                    <div>{calculateTotal().toLocaleString()} 元</div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* 圖表區域 */}
-                    <div className="w-full lg:w-1/2">
-                        <h3 className="font-medium mb-2">比例圖表</div>
-                        <div className="aspect-square w-full max-w-[250px] mx-auto">
-                            <PieChart 
-                                data={calculatePercentages()
-                                    .filter(stock => stock.amount && stock.percentage > 0)
-                                    .map(stock => ({ value: stock.percentage }))}
-                                colors={stocks
-                                    .filter(stock => stock.amount && Number(stock.amount) > 0)
-                                    .map(stock => stock.color)}
-                            />
+                        <div className="w-full">
+                            <h3 className="font-medium mb-4">比例圖表</h3>
+                            <div className="aspect-square w-full max-w-[250px] mx-auto">
+                                <PieChart 
+                                    data={calculatePercentages()
+                                        .filter(stock => stock.amount && stock.percentage > 0)
+                                        .map(stock => ({ value: stock.percentage }))}
+                                    colors={stocks
+                                        .filter(stock => stock.amount && Number(stock.amount) > 0)
+                                        .map(stock => stock.color)}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
