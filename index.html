@@ -600,13 +600,16 @@
                                         <div className="font-medium mb-2">比例圖表</div>
                                         <div className="w-48 h-48">
                                             <PieChart
-                                                data={calculatePercentages()
-                                                    .filter(stock => stock.amount && stock.percentage > 0)
-                                                    .map(stock => ({ value: stock.percentage }))}
-                                                colors={stocks
-                                                    .filter(stock => stock.amount && Number(stock.amount) > 0)
-                                                    .map(stock => stock.color)}
-                                                variant="donut"
+                                            data={calculatePercentages()
+                                                .filter(stock => stock.amount && stock.percentage > 0)
+                                                .map(stock => ({ 
+                                                    value: stock.percentage,
+                                                    color: stock.color 
+                                                }))}
+                                            colors={calculatePercentages()
+                                                .filter(stock => stock.amount && stock.percentage > 0)
+                                                .map(stock => stock.color)}
+                                            variant="donut"
                                             />
                                         </div>
                                     </div>
